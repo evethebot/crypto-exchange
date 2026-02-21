@@ -19,9 +19,16 @@ export async function GET(
       .orderBy(desc(trades.createdAt))
       .limit(limit);
 
+    // Add computed fields: side (taker side) and timestamp
+    const formattedTrades = recentTrades.map((trade) => ({
+      ...trade,
+      side: 'buy', // Taker side: in our engine, the taker is the one who matched against resting orders
+      timestamp: trade.createdAt,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: recentTrades,
+      data: formattedTrades,
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to fetch trades' }, { status: 500 });
