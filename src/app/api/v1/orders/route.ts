@@ -39,6 +39,20 @@ export async function POST(request: Request) {
   }
 
   try {
+    // ===== Max Open Orders Check (200 per user) =====
+    const MAX_OPEN_ORDERS = 200;
+    const openOrderCount = await db.execute(sql`
+      SELECT COUNT(*) as cnt FROM orders
+      WHERE user_id = ${auth.userId} AND status IN ('new', 'partially_filled')
+    `);
+    const currentCount = Number(openOrderCount[0]?.cnt || 0);
+    if (currentCount >= MAX_OPEN_ORDERS) {
+      return NextResponse.json(
+        { success: false, error: 'MAX_OPEN_ORDERS: Maximum 200 open orders per user' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { symbol, side, type, price, amount } = body;
 
