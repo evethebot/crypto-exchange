@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
+import { resetCircuitBreaker } from '@/lib/matching-engine';
 
 export async function POST(request: NextRequest) {
   // Only available in development/test
@@ -20,6 +21,9 @@ export async function POST(request: NextRequest) {
     await db.execute(sql`DELETE FROM api_keys`);
     await db.execute(sql`DELETE FROM users WHERE email != 'admin@exchange.local'`);
     await db.execute(sql`UPDATE order_sequence SET last_seq = 0 WHERE id = 1`);
+
+    // Reset in-memory state
+    resetCircuitBreaker();
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

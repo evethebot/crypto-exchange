@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { tradingPairs } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { getCircuitBreakerStatus } from '@/lib/matching-engine';
 
 export async function GET(
   request: Request,
@@ -22,6 +23,8 @@ export async function GET(
       );
     }
 
+    const cbStatus = getCircuitBreakerStatus(pair.symbol);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -36,6 +39,7 @@ export async function GET(
         makerFeeBps: pair.makerFeeBps,
         takerFeeBps: pair.takerFeeBps,
         status: pair.status,
+        circuitBreaker: cbStatus,
       },
     });
   } catch (error) {

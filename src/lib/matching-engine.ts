@@ -7,6 +7,80 @@ import { eq, and, sql, asc, desc, gte, lte } from 'drizzle-orm';
 Big.DP = 20; // decimal places for division
 Big.RM = Big.roundDown; // round down (conservative for financial)
 
+// ===== Circuit Breaker: halt trading when price moves >15% in 1 minute =====
+const CIRCUIT_BREAKER_THRESHOLD = 0.15; // 15%
+const CIRCUIT_BREAKER_WINDOW_MS = 60_000; // 1 minute
+
+interface PriceRecord {
+  price: number;
+  timestamp: number;
+}
+
+const recentPrices = new Map<string, PriceRecord[]>();
+const circuitBreakerTripped = new Map<string, { trippedAt: number; referencePrice: number; triggerPrice: number }>();
+
+export function recordTradePrice(symbol: string, price: number) {
+  const now = Date.now();
+  const records = recentPrices.get(symbol) || [];
+  records.push({ price, timestamp: now });
+  // Keep only last 1 minute of prices
+  const cutoff = now - CIRCUIT_BREAKER_WINDOW_MS;
+  const filtered = records.filter(r => r.timestamp >= cutoff);
+  recentPrices.set(symbol, filtered);
+}
+
+export function checkCircuitBreaker(symbol: string, proposedPrice: number): { allowed: boolean; error?: string } {
+  const now = Date.now();
+  
+  // Check if circuit breaker is currently tripped
+  const tripped = circuitBreakerTripped.get(symbol);
+  if (tripped && now - tripped.trippedAt < CIRCUIT_BREAKER_WINDOW_MS) {
+    return { allowed: false, error: `CIRCUIT_BREAKER: Trading halted for ${symbol}. Price moved >15% in 1 minute.` };
+  } else if (tripped) {
+    // Circuit breaker expired, clear it
+    circuitBreakerTripped.delete(symbol);
+  }
+
+  const records = recentPrices.get(symbol) || [];
+  if (records.length === 0) return { allowed: true };
+
+  const cutoff = now - CIRCUIT_BREAKER_WINDOW_MS;
+  const recentRecords = records.filter(r => r.timestamp >= cutoff);
+  if (recentRecords.length === 0) return { allowed: true };
+
+  // Reference price = earliest price in the window
+  const referencePrice = recentRecords[0].price;
+  if (referencePrice === 0) return { allowed: true };
+
+  const change = Math.abs(proposedPrice - referencePrice) / referencePrice;
+  
+  if (change > CIRCUIT_BREAKER_THRESHOLD) {
+    circuitBreakerTripped.set(symbol, { trippedAt: now, referencePrice, triggerPrice: proposedPrice });
+    return { allowed: false, error: `CIRCUIT_BREAKER: Price change ${(change * 100).toFixed(1)}% exceeds 15% threshold for ${symbol}` };
+  }
+
+  return { allowed: true };
+}
+
+export function getCircuitBreakerStatus(symbol: string): { active: boolean; trippedAt?: number; referencePrice?: number; triggerPrice?: number } {
+  const tripped = circuitBreakerTripped.get(symbol);
+  const now = Date.now();
+  if (tripped && now - tripped.trippedAt < CIRCUIT_BREAKER_WINDOW_MS) {
+    return { active: true, ...tripped };
+  }
+  return { active: false };
+}
+
+export function resetCircuitBreaker(symbol?: string) {
+  if (symbol) {
+    circuitBreakerTripped.delete(symbol);
+    recentPrices.delete(symbol);
+  } else {
+    circuitBreakerTripped.clear();
+    recentPrices.clear();
+  }
+}
+
 interface OrderInput {
   userId: string;
   symbol: string;
@@ -115,6 +189,8 @@ export async function processOrder(input: OrderInput): Promise<MatchResult> {
       }).returning();
 
       executedTrades.push({ id: trade.id, price: tradePrice.toFixed(8), amount: tradeAmount.toFixed(8) });
+      // Record price for circuit breaker
+      recordTradePrice(input.symbol, tradePrice.toNumber());
 
       // Update maker order
       const newMakerFilled = new Big(makerOrder.filled || '0').plus(tradeAmount);
@@ -207,6 +283,8 @@ export async function processOrder(input: OrderInput): Promise<MatchResult> {
       }).returning();
 
       executedTrades.push({ id: trade.id, price: tradePrice.toFixed(8), amount: tradeAmount.toFixed(8) });
+      // Record price for circuit breaker
+      recordTradePrice(input.symbol, tradePrice.toNumber());
 
       // Update maker order
       const newMakerFilled = new Big(makerOrder.filled || '0').plus(tradeAmount);
