@@ -545,7 +545,7 @@ export default function TradePage() {
       </div>
 
       {/* Main layout */}
-      <div style={{ display: 'flex', gap: '1px', background: 'var(--border)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '1px', background: 'var(--border)', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
         {/* Chart panel */}
         <div
           className="panel"
@@ -556,6 +556,8 @@ export default function TradePage() {
             padding: '16px',
             minHeight: '400px',
             borderRight: '1px solid var(--border)',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -824,6 +826,8 @@ export default function TradePage() {
             minWidth: '280px',
             background: 'var(--bg-primary)',
             padding: '16px',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
           {/* Order type tabs: Limit / Market / Stop-Limit / OCO */}
@@ -1420,6 +1424,8 @@ export default function TradePage() {
           gap: '1px',
           background: 'var(--border)',
           borderTop: '1px solid var(--border)',
+          position: 'relative',
+          zIndex: 5,
         }}
       >
         <div
@@ -1560,11 +1566,13 @@ export default function TradePage() {
               </div>
             )}
             {openOrders.length > 0 && (
+              <div style={{ overflowX: 'auto' }}>
               <table
                 style={{
                   width: '100%',
                   borderCollapse: 'collapse',
                   fontSize: '13px',
+                  minWidth: '600px',
                 }}
               >
                 <thead>
@@ -1678,6 +1686,7 @@ export default function TradePage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         )}

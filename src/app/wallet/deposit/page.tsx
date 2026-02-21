@@ -1,7 +1,97 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+
+function CurrencyCombobox({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div
+        role="combobox"
+        aria-expanded={open}
+        aria-label="Select coin"
+        tabIndex={0}
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text-primary)',
+          fontSize: '14px',
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxSizing: 'border-box',
+        }}
+      >
+        <span>{value}</span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>▼</span>
+      </div>
+      {open && (
+        <div
+          role="listbox"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            marginTop: '4px',
+            zIndex: 100,
+            overflow: 'hidden',
+          }}
+        >
+          {options.map((opt) => (
+            <div
+              key={opt}
+              role="option"
+              aria-selected={opt === value}
+              onClick={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+              style={{
+                padding: '10px 12px',
+                cursor: 'pointer',
+                background: opt === value ? 'var(--bg-tertiary)' : 'transparent',
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+              }}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DepositPage() {
   const router = useRouter();
@@ -82,29 +172,13 @@ export default function DepositPage() {
 
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '6px', fontSize: '14px' }}>
-            Currency
+            Coin
           </label>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {['USDT', 'BTC', 'ETH', 'DOGE', 'XRP'].map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCurrency(c)}
-                style={{
-                  padding: '8px 16px',
-                  background: currency === c ? 'var(--yellow)' : 'var(--bg-primary)',
-                  color: currency === c ? '#0B0E11' : 'var(--text-primary)',
-                  border: `1px solid ${currency === c ? 'var(--yellow)' : 'var(--border)'}`,
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: currency === c ? '600' : '400',
-                }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+          <CurrencyCombobox
+            value={currency}
+            onChange={setCurrency}
+            options={['USDT', 'BTC', 'ETH', 'DOGE', 'XRP']}
+          />
         </div>
 
         <div style={{ marginBottom: '20px' }}>
