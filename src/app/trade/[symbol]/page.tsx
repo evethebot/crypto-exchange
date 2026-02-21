@@ -1565,129 +1565,61 @@ export default function TradePage() {
                 No orders yet. Place an order to get started.
               </div>
             )}
-            {openOrders.length > 0 && (
-              <div style={{ overflowX: 'auto' }}>
-              <table
+            {openOrders.map((order) => (
+              <div
+                key={order.id}
                 style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  fontSize: '13px',
-                  minWidth: '600px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '8px 4px',
+                  borderBottom: '1px solid var(--border)',
+                  fontSize: '12px',
+                  gap: '8px',
+                  position: 'relative',
+                  zIndex: 20,
                 }}
               >
-                <thead>
-                  <tr
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      borderBottom: '1px solid var(--border)',
-                    }}
-                  >
-                    <th style={{ textAlign: 'left', padding: '6px' }}>Pair</th>
-                    <th style={{ textAlign: 'left', padding: '6px' }}>Type</th>
-                    <th style={{ textAlign: 'left', padding: '6px' }}>Side</th>
-                    <th style={{ textAlign: 'right', padding: '6px' }}>
-                      Price
-                    </th>
-                    <th style={{ textAlign: 'right', padding: '6px' }}>
-                      Amount
-                    </th>
-                    <th style={{ textAlign: 'right', padding: '6px' }}>
-                      Filled
-                    </th>
-                    <th style={{ textAlign: 'center', padding: '6px' }}>
-                      Status
-                    </th>
-                    <th style={{ textAlign: 'center', padding: '6px' }}>
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {openOrders.map((order) => (
-                    <tr
-                      key={order.id}
-                      style={{
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
-                      <td style={{ padding: '6px' }}>
-                        {order.symbol.replace('_', '/')}
-                      </td>
-                      <td style={{ padding: '6px' }}>{order.type}</td>
-                      <td
-                        style={{
-                          padding: '6px',
-                          color:
-                            order.side === 'buy'
-                              ? 'var(--green)'
-                              : 'var(--red)',
-                        }}
-                      >
-                        {order.side}
-                      </td>
-                      <td
-                        style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontFamily: "'JetBrains Mono', monospace",
-                        }}
-                      >
-                        {order.price || '-'}
-                      </td>
-                      <td
-                        style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontFamily: "'JetBrains Mono', monospace",
-                        }}
-                      >
-                        {Number(order.amount).toFixed(6)}
-                      </td>
-                      <td
-                        style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontFamily: "'JetBrains Mono', monospace",
-                        }}
-                      >
-                        {Number(order.filled).toFixed(6)}
-                      </td>
-                      <td style={{ padding: '6px', textAlign: 'center' }}>
-                        <span
-                          className="badge"
-                          style={{
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            background: 'rgba(252, 213, 53, 0.1)',
-                            color: 'var(--yellow)',
-                          }}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '6px', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handleCancel(order.id)}
-                          style={{
-                            padding: '4px 12px',
-                            background: 'var(--bg-tertiary)',
-                            border: '1px solid var(--border)',
-                            color: 'var(--red)',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '600' }}>{order.symbol.replace('_', '/')}</span>
+                    <span style={{
+                      color: order.side === 'buy' ? 'var(--green)' : 'var(--red)',
+                      textTransform: 'uppercase',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                    }}>{order.side}</span>
+                    <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>{order.type}</span>
+                    <span className="badge" style={{
+                      padding: '1px 6px', borderRadius: '4px', fontSize: '11px',
+                      background: 'rgba(252, 213, 53, 0.1)', color: 'var(--yellow)',
+                    }}>{order.status}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                    <span>Price: <span style={{ color: 'var(--text-primary)' }}>{order.price || '-'}</span></span>
+                    <span>Amt: <span style={{ color: 'var(--text-primary)' }}>{Number(order.amount).toFixed(6)}</span></span>
+                    <span>Filled: <span style={{ color: 'var(--text-primary)' }}>{Number(order.filled).toFixed(6)}</span></span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCancel(order.id)}
+                  style={{
+                    padding: '6px 16px',
+                    background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--red)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    flexShrink: 0,
+                    position: 'relative',
+                    zIndex: 25,
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
-            )}
+            ))}
           </div>
         )}
 
