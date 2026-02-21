@@ -5,10 +5,37 @@ import { eq, and, sql, desc } from 'drizzle-orm';
 import { getAuthFromRequest } from '@/lib/auth';
 import { processOrder, freezeBalance } from '@/lib/matching-engine';
 
+// ===== Rate Limiting: 5 orders per second per user =====
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 1000;
+const RATE_LIMIT_MAX = 5;
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(userId) || [];
+  // Remove expired timestamps
+  const valid = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  if (valid.length >= RATE_LIMIT_MAX) {
+    rateLimitMap.set(userId, valid);
+    return false; // rate limited
+  }
+  valid.push(now);
+  rateLimitMap.set(userId, valid);
+  return true; // allowed
+}
+
 export async function POST(request: Request) {
   const auth = getAuthFromRequest(request);
   if (!auth) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit check
+  if (!checkRateLimit(auth.userId)) {
+    return NextResponse.json(
+      { success: false, error: 'Rate limit exceeded. Maximum 5 orders per second.' },
+      { status: 429 }
+    );
   }
 
   try {
