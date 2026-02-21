@@ -1,0 +1,9 @@
+{
+  "name": "crypto-exchange",
+  "tech": "nextjs",
+  "port": 3000,
+  "buildCmd": "pnpm build",
+  "devCmd": "pnpm dev",
+  "testCmd": "npx playwright test",
+  "repo": "crypto-exchange"
+}

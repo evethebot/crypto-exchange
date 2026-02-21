@@ -1,0 +1,6212 @@
+[
+  {
+    "id": 1,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "Next.js project bootstraps and dev server starts on port 3000",
+    "acceptanceCriteria": [
+      "Given the repo is cloned and dependencies installed",
+      "When I run pnpm dev",
+      "Then the server starts on http://localhost:3000 within 10 seconds"
+    ],
+    "steps": [
+      "Step 1: Clone the repository",
+      "Step 2: Run pnpm install",
+      "Step 3: Copy .env.example to .env",
+      "Step 4: Start PostgreSQL via docker compose up -d",
+      "Step 5: Run pnpm dev",
+      "Step 6: Verify http://localhost:3000 responds with 200",
+      "Step 7: Verify /api/v1/health returns { success: true }"
+    ],
+    "edgeCases": [
+      "Port 3000 already in use → clear error message",
+      "Missing .env → fallback to defaults with warning",
+      "PostgreSQL not running → clear connection error"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/health | jq .success"
+    ],
+    "testFile": "tests/e2e/feature-1.spec.ts",
+    "dependsOn": [],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Foundation: everything depends on this"
+  },
+  {
+    "id": 2,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "PostgreSQL database connection and schema migrations run successfully",
+    "acceptanceCriteria": [
+      "Given PostgreSQL is running",
+      "When the application starts",
+      "Then all database tables are created via Drizzle migrations"
+    ],
+    "steps": [
+      "Step 1: Ensure PostgreSQL is running on configured DATABASE_URL",
+      "Step 2: Run pnpm db:migrate",
+      "Step 3: Verify users table exists",
+      "Step 4: Verify trading_pairs table exists",
+      "Step 5: Verify orders table exists",
+      "Step 6: Verify trades table exists",
+      "Step 7: Verify wallets table exists",
+      "Step 8: Verify candles table exists",
+      "Step 9: Verify all enum types are created",
+      "Step 10: Verify indexes are created"
+    ],
+    "edgeCases": [
+      "Migration run twice → idempotent, no errors",
+      "Database already has tables → migration skips existing",
+      "Invalid DATABASE_URL → clear error with instructions"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/health | jq .data.database"
+    ],
+    "testFile": "tests/e2e/feature-2.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "All 14 tables from spec must exist"
+  },
+  {
+    "id": 3,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "Seed data populates trading pairs and admin user on first run",
+    "acceptanceCriteria": [
+      "Given the database is freshly migrated",
+      "When the seed script runs",
+      "Then 5 trading pairs and 1 admin user are created"
+    ],
+    "steps": [
+      "Step 1: Run pnpm db:seed",
+      "Step 2: Verify BTC_USDT pair exists with correct precision",
+      "Step 3: Verify ETH_USDT pair exists",
+      "Step 4: Verify ETH_BTC pair exists",
+      "Step 5: Verify DOGE_USDT pair exists",
+      "Step 6: Verify XRP_USDT pair exists",
+      "Step 7: Verify admin user exists with role='admin'",
+      "Step 8: Verify admin can login with seed credentials",
+      "Step 9: Verify seed is idempotent (run twice, no duplicates)"
+    ],
+    "edgeCases": [
+      "Seed run on populated DB → skip existing, no errors",
+      "Missing ADMIN_SEED_EMAIL env → use defaults"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/market/pairs | jq '.data | length'"
+    ],
+    "testFile": "tests/e2e/feature-3.spec.ts",
+    "dependsOn": [
+      2
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 4,
+    "category": "functional",
+    "priority": 1,
+    "area": "websocket",
+    "description": "WebSocket server accepts connections on ws://localhost:3000/ws",
+    "acceptanceCriteria": [
+      "Given the dev server is running",
+      "When a client connects to ws://localhost:3000/ws",
+      "Then the connection is established and server responds to PING"
+    ],
+    "steps": [
+      "Step 1: Start the dev server",
+      "Step 2: Open WebSocket connection to ws://localhost:3000/ws",
+      "Step 3: Verify connection opens successfully",
+      "Step 4: Send PING message",
+      "Step 5: Receive PONG response",
+      "Step 6: Verify connection stays alive for 30+ seconds",
+      "Step 7: Close connection gracefully"
+    ],
+    "edgeCases": [
+      "Multiple simultaneous connections → all accepted",
+      "Invalid URL path → connection rejected",
+      "No pong within 10s → server disconnects client"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-4.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-4.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "WebSocket and HTTP share port 3000 via upgrade"
+  },
+  {
+    "id": 5,
+    "category": "style",
+    "priority": 1,
+    "area": "style",
+    "description": "Dark theme is the default with Binance-inspired color system",
+    "acceptanceCriteria": [
+      "Given a user visits the site for the first time",
+      "When the page loads",
+      "Then the dark theme is applied with correct color tokens"
+    ],
+    "steps": [
+      "Step 1: Navigate to http://localhost:3000",
+      "Step 2: Verify background color is near #0B0E11 (dark)",
+      "Step 3: Verify text color is near #EAECEF (light)",
+      "Step 4: Verify green (#0ECB81) is used for buy/positive",
+      "Step 5: Verify red (#F6465D) is used for sell/negative",
+      "Step 6: Verify card backgrounds use #1E2329",
+      "Step 7: Verify no white flash on initial load"
+    ],
+    "edgeCases": [
+      "System prefers-color-scheme: light → still dark (dark is default)",
+      "CSS variables are defined and accessible"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-5.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Color tokens from design spec §15.1"
+  },
+  {
+    "id": 6,
+    "category": "style",
+    "priority": 1,
+    "area": "navigation",
+    "description": "Top navigation bar renders with logo, nav links, and user menu",
+    "acceptanceCriteria": [
+      "Given a user visits any page",
+      "When the page loads",
+      "Then the top navbar is visible with Markets, Trade, Wallet, Orders links"
+    ],
+    "steps": [
+      "Step 1: Navigate to http://localhost:3000",
+      "Step 2: Verify navbar is fixed at top",
+      "Step 3: Verify logo/brand is visible on the left",
+      "Step 4: Verify Markets link is present",
+      "Step 5: Verify Trade link is present",
+      "Step 6: Verify Wallet link is present (or Login if not authenticated)",
+      "Step 7: Verify Orders link is present (or Login if not authenticated)",
+      "Step 8: Verify theme toggle button exists",
+      "Step 9: Verify Login/Register buttons when not authenticated",
+      "Step 10: Click each nav link and verify navigation"
+    ],
+    "edgeCases": [
+      "Unauthenticated → show Login/Register instead of Wallet/Orders",
+      "Navbar stays fixed on scroll"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-6.spec.ts",
+    "dependsOn": [
+      1,
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 7,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "User can register with email and password",
+    "acceptanceCriteria": [
+      "Given no account exists for the email",
+      "When a user submits registration with valid email and strong password",
+      "Then an account is created with status active and the user receives JWT tokens"
+    ],
+    "steps": [
+      "Step 1: Navigate to /register",
+      "Step 2: Enter valid email address",
+      "Step 3: Enter password meeting requirements (8+ chars, uppercase, lowercase, number)",
+      "Step 4: See real-time password strength indicator",
+      "Step 5: Accept terms of service checkbox",
+      "Step 6: Click Create Account",
+      "Step 7: Verify redirect to trading page or dashboard",
+      "Step 8: Verify JWT tokens are stored (cookie or localStorage)",
+      "Step 9: Verify user appears in database with role='user', status='active'",
+      "Step 10: Verify kyc_level='level_0'"
+    ],
+    "edgeCases": [
+      "Duplicate email → inline error 'Email already registered'",
+      "Weak password → show specific requirements not met",
+      "SQL injection in email → sanitized, rejected",
+      "Empty fields → validation errors shown"
+    ],
+    "verify": [
+      "curl -s -X POST http://localhost:3000/api/v1/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"Test1234\"}' | jq .success"
+    ],
+    "testFile": "tests/e2e/feature-7.spec.ts",
+    "dependsOn": [
+      2
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Auto-verified, no email verification required"
+  },
+  {
+    "id": 8,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "User can login with email and password and receive JWT tokens",
+    "acceptanceCriteria": [
+      "Given a registered user exists",
+      "When they submit correct email and password",
+      "Then they receive accessToken and refreshToken"
+    ],
+    "steps": [
+      "Step 1: Navigate to /login",
+      "Step 2: Enter registered email",
+      "Step 3: Enter correct password",
+      "Step 4: Click Login",
+      "Step 5: Verify accessToken is returned (15min expiry)",
+      "Step 6: Verify refreshToken is returned (7 day expiry)",
+      "Step 7: Verify redirect to trading page",
+      "Step 8: Verify navbar shows user menu instead of Login/Register",
+      "Step 9: Verify login_history record is created"
+    ],
+    "edgeCases": [
+      "Wrong password → 401 with 'Invalid credentials'",
+      "Non-existent email → 401 (same message, no enumeration)",
+      "5 failed attempts → account temporarily locked (30 min)",
+      "Suspended user → 403 'Account suspended'"
+    ],
+    "verify": [
+      "curl -s -X POST http://localhost:3000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"Test1234\"}' | jq .data.accessToken"
+    ],
+    "testFile": "tests/e2e/feature-8.spec.ts",
+    "dependsOn": [
+      7
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 9,
+    "category": "functional",
+    "priority": 1,
+    "area": "auth",
+    "description": "JWT access token refresh works before expiry",
+    "acceptanceCriteria": [
+      "Given a user has a valid refresh token",
+      "When they call the refresh endpoint",
+      "Then they receive a new access token"
+    ],
+    "steps": [
+      "Step 1: Login to get accessToken and refreshToken",
+      "Step 2: Call POST /api/v1/auth/refresh with refreshToken",
+      "Step 3: Verify new accessToken is returned",
+      "Step 4: Verify new accessToken works for authenticated endpoints",
+      "Step 5: Verify old accessToken still works until expiry"
+    ],
+    "edgeCases": [
+      "Expired refresh token → 401",
+      "Invalid refresh token → 401",
+      "Revoked refresh token (after logout) → 401"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-9.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-9.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 10,
+    "category": "functional",
+    "priority": 1,
+    "area": "wallet",
+    "description": "Wallet balances can be queried for authenticated user",
+    "acceptanceCriteria": [
+      "Given an authenticated user",
+      "When they call GET /api/v1/wallet/balances",
+      "Then they receive all currency balances with available and frozen amounts"
+    ],
+    "steps": [
+      "Step 1: Login as test user",
+      "Step 2: Call GET /api/v1/wallet/balances with auth header",
+      "Step 3: Verify response contains array of balance objects",
+      "Step 4: Each balance has currency, available, frozen, total fields",
+      "Step 5: Verify total = available + frozen for each currency",
+      "Step 6: Verify unauthorized request returns 401",
+      "Step 7: Verify new user has empty balances"
+    ],
+    "edgeCases": [
+      "No wallets yet → return empty array",
+      "Expired token → 401"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/wallet/balances -H 'Authorization: Bearer TOKEN' | jq .data"
+    ],
+    "testFile": "tests/e2e/feature-10.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 11,
+    "category": "functional",
+    "priority": 1,
+    "area": "wallet",
+    "description": "Simulated deposit credits user balance with confirmation animation",
+    "acceptanceCriteria": [
+      "Given an authenticated user",
+      "When they submit a deposit request",
+      "Then their balance is credited after simulated confirmation delay"
+    ],
+    "steps": [
+      "Step 1: Login as user",
+      "Step 2: Navigate to wallet deposit page",
+      "Step 3: Select currency (USDT)",
+      "Step 4: Enter amount (10000)",
+      "Step 5: Click Deposit",
+      "Step 6: See confirmation progress animation (1/3, 2/3, 3/3)",
+      "Step 7: See 'Completed' status after ~3 seconds",
+      "Step 8: Verify balance increased by deposit amount",
+      "Step 9: Verify deposit record in deposits table",
+      "Step 10: Verify wallet_transaction record created"
+    ],
+    "edgeCases": [
+      "Zero amount → validation error",
+      "Negative amount → validation error",
+      "Very large amount → accepted (demo mode)"
+    ],
+    "verify": [
+      "curl -s -X POST http://localhost:3000/api/v1/wallet/deposit -H 'Authorization: Bearer TOKEN' -H 'Content-Type: application/json' -d '{\"currency\":\"USDT\",\"amount\":\"10000\"}' | jq .success"
+    ],
+    "testFile": "tests/e2e/feature-11.spec.ts",
+    "dependsOn": [
+      10
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Simulated: 3-second delay with progress animation"
+  },
+  {
+    "id": 12,
+    "category": "functional",
+    "priority": 1,
+    "area": "market",
+    "description": "Public market pairs API returns all active trading pairs",
+    "acceptanceCriteria": [
+      "Given trading pairs are seeded",
+      "When calling GET /api/v1/market/pairs",
+      "Then all active pairs are returned with their configuration"
+    ],
+    "steps": [
+      "Step 1: Call GET /api/v1/market/pairs (no auth required)",
+      "Step 2: Verify response contains 5 pairs",
+      "Step 3: Each pair has symbol, baseCurrency, quoteCurrency",
+      "Step 4: Each pair has pricePrecision, amountPrecision",
+      "Step 5: Each pair has minAmount, minTotal",
+      "Step 6: Each pair has makerFeeBps, takerFeeBps",
+      "Step 7: Each pair has status = 'active'",
+      "Step 8: Verify suspended pairs are excluded"
+    ],
+    "edgeCases": [
+      "No pairs exist → empty array",
+      "Mix of active and suspended → only active returned"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/market/pairs | jq '.data[] | .symbol'"
+    ],
+    "testFile": "tests/e2e/feature-12.spec.ts",
+    "dependsOn": [
+      3
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 13,
+    "category": "functional",
+    "priority": 1,
+    "area": "matching",
+    "description": "Matching engine processes limit orders with price-time priority",
+    "acceptanceCriteria": [
+      "Given the matching engine is running",
+      "When a buy limit order crosses with a resting sell order",
+      "Then a trade is executed at the maker's price"
+    ],
+    "steps": [
+      "Step 1: Place sell limit order: 1.0 BTC @ 50000 USDT (user A)",
+      "Step 2: Place buy limit order: 1.0 BTC @ 50000 USDT (user B)",
+      "Step 3: Verify trade is created with price=50000, amount=1.0",
+      "Step 4: Verify sell order status is 'filled'",
+      "Step 5: Verify buy order status is 'filled'",
+      "Step 6: Verify buyer receives BTC (minus taker fee)",
+      "Step 7: Verify seller receives USDT (minus maker fee)",
+      "Step 8: Verify wallet_transactions are recorded",
+      "Step 9: Verify trade.seq is monotonically increasing",
+      "Step 10: Place two sells at same price, verify earlier one fills first"
+    ],
+    "edgeCases": [
+      "Empty order book → limit order rests in book",
+      "Buy price > ask → fills at ask price (buyer gets better price)",
+      "Multiple price levels → fills best price first",
+      "Exact same timestamp → order with lower seq fills first"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-13.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-13.spec.ts",
+    "dependsOn": [
+      11,
+      12
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Core matching engine - most critical feature"
+  },
+  {
+    "id": 14,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Order placement API validates input and freezes balance",
+    "acceptanceCriteria": [
+      "Given an authenticated user with sufficient balance",
+      "When they place a valid limit order",
+      "Then the order is accepted and the required balance is frozen"
+    ],
+    "steps": [
+      "Step 1: Deposit 100000 USDT to test user",
+      "Step 2: Place buy limit order: 1.0 BTC @ 50000",
+      "Step 3: Verify order returned with status='new'",
+      "Step 4: Verify USDT available decreased by 50000",
+      "Step 5: Verify USDT frozen increased by 50000",
+      "Step 6: Place sell limit order: test with BTC balance",
+      "Step 7: Verify BTC available decreased, frozen increased",
+      "Step 8: Attempt order with insufficient balance → 400 error",
+      "Step 9: Attempt order with invalid precision → 400 error",
+      "Step 10: Attempt order below min_amount → 400 error"
+    ],
+    "edgeCases": [
+      "Insufficient balance → 400 INSUFFICIENT_BALANCE",
+      "Invalid symbol → 400 INVALID_SYMBOL",
+      "Amount below min → 400 AMOUNT_TOO_SMALL",
+      "Price precision exceeds pair config → 400",
+      "Negative price or amount → 400"
+    ],
+    "verify": [
+      "curl -s -X POST http://localhost:3000/api/v1/orders -H 'Authorization: Bearer TOKEN' -H 'Content-Type: application/json' -d '{\"symbol\":\"BTC_USDT\",\"side\":\"buy\",\"type\":\"limit\",\"price\":\"50000\",\"amount\":\"0.1\"}' | jq .data.status"
+    ],
+    "testFile": "tests/e2e/feature-14.spec.ts",
+    "dependsOn": [
+      11,
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 15,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Order cancellation unfreezes balance",
+    "acceptanceCriteria": [
+      "Given a user has an open order with frozen balance",
+      "When they cancel the order",
+      "Then the order status changes to cancelled and frozen balance is restored"
+    ],
+    "steps": [
+      "Step 1: Place a limit buy order (50000 USDT frozen)",
+      "Step 2: Verify frozen balance increased",
+      "Step 3: Call DELETE /api/v1/orders/:orderId",
+      "Step 4: Verify order status is 'cancelled'",
+      "Step 5: Verify USDT available increased by 50000",
+      "Step 6: Verify USDT frozen decreased by 50000",
+      "Step 7: Attempt to cancel same order again → 400 error"
+    ],
+    "edgeCases": [
+      "Cancel already filled order → 400 ORDER_NOT_CANCELLABLE",
+      "Cancel already cancelled order → 400",
+      "Cancel another user's order → 403",
+      "Cancel non-existent order → 404"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-15.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-15.spec.ts",
+    "dependsOn": [
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 16,
+    "category": "functional",
+    "priority": 1,
+    "area": "matching",
+    "description": "Trade settlement atomically updates both users' wallets",
+    "acceptanceCriteria": [
+      "Given two orders match",
+      "When the trade is settled",
+      "Then both users' wallets are updated atomically in a single DB transaction"
+    ],
+    "steps": [
+      "Step 1: User A deposits 100000 USDT, User B deposits 2 BTC",
+      "Step 2: User B places sell 1.0 BTC @ 50000",
+      "Step 3: User A places buy 1.0 BTC @ 50000",
+      "Step 4: Verify trade is created",
+      "Step 5: Verify User A: USDT decreased, BTC increased (minus taker fee)",
+      "Step 6: Verify User B: BTC decreased (frozen released), USDT increased (minus maker fee)",
+      "Step 7: Verify total system balance is conserved (minus fees)",
+      "Step 8: Verify wallet_transactions for all movements"
+    ],
+    "edgeCases": [
+      "DB error during settlement → transaction rolls back, no partial state",
+      "Fees round down (never overcharge)"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-16.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-16.spec.ts",
+    "dependsOn": [
+      13,
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 17,
+    "category": "functional",
+    "priority": 1,
+    "area": "orderbook",
+    "description": "Order book depth API returns aggregated bid/ask levels",
+    "acceptanceCriteria": [
+      "Given there are orders in the book",
+      "When calling GET /api/v1/market/depth/:symbol",
+      "Then sorted bids (desc) and asks (asc) with aggregated quantities are returned"
+    ],
+    "steps": [
+      "Step 1: Place multiple sell orders at different prices",
+      "Step 2: Place multiple buy orders at different prices",
+      "Step 3: Call GET /api/v1/market/depth/BTC_USDT?limit=20",
+      "Step 4: Verify bids are sorted descending by price",
+      "Step 5: Verify asks are sorted ascending by price",
+      "Step 6: Verify multiple orders at same price are summed",
+      "Step 7: Verify limit parameter controls depth levels"
+    ],
+    "edgeCases": [
+      "Empty book → empty bids and asks arrays",
+      "Only bids → asks empty",
+      "limit=0 → use default (20)"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/market/depth/BTC_USDT?limit=10 | jq '.data.bids | length'"
+    ],
+    "testFile": "tests/e2e/feature-17.spec.ts",
+    "dependsOn": [
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 18,
+    "category": "style",
+    "priority": 1,
+    "area": "style",
+    "description": "Demo mode banner displays at the top of every page",
+    "acceptanceCriteria": [
+      "Given a user visits any page",
+      "When the page loads",
+      "Then a persistent banner shows 'Demo Exchange — No real funds'"
+    ],
+    "steps": [
+      "Step 1: Navigate to http://localhost:3000",
+      "Step 2: Verify banner is visible at the top of the page",
+      "Step 3: Verify banner text includes 'Demo' or 'demo'",
+      "Step 4: Navigate to /trade/BTC_USDT",
+      "Step 5: Verify banner is still visible",
+      "Step 6: Dismiss the banner (if dismissible)",
+      "Step 7: Verify dismissal persists across page navigations"
+    ],
+    "edgeCases": [
+      "Banner dismissal stored in localStorage",
+      "New session → banner reappears"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-18.spec.ts",
+    "dependsOn": [
+      1,
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 19,
+    "category": "style",
+    "priority": 1,
+    "area": "style",
+    "description": "Monospace font is used for all numeric/financial data",
+    "acceptanceCriteria": [
+      "Given financial data is displayed",
+      "When viewing prices, amounts, or balances",
+      "Then monospace font with tabular-nums is applied"
+    ],
+    "steps": [
+      "Step 1: Navigate to trading page",
+      "Step 2: Inspect price elements → font-family includes monospace",
+      "Step 3: Inspect amount elements → font-variant-numeric: tabular-nums",
+      "Step 4: Verify order book numbers are aligned vertically",
+      "Step 5: Verify balance display uses monospace",
+      "Step 6: Navigate to wallet page and repeat checks"
+    ],
+    "edgeCases": [
+      "Non-numeric text uses sans-serif font",
+      "Mixed content (labels + numbers) uses appropriate fonts"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-19.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Critical for trading UI readability"
+  },
+  {
+    "id": 20,
+    "category": "style",
+    "priority": 1,
+    "area": "style",
+    "description": "Loading skeleton placeholders display while data is fetching",
+    "acceptanceCriteria": [
+      "Given a page is loading data",
+      "When data has not yet arrived",
+      "Then skeleton placeholders are shown in place of content"
+    ],
+    "steps": [
+      "Step 1: Navigate to trading page",
+      "Step 2: Observe skeleton loaders for chart, order book, recent trades",
+      "Step 3: Verify skeletons match the shape of the actual content",
+      "Step 4: Verify skeletons disappear when data loads",
+      "Step 5: Navigate to wallet page",
+      "Step 6: Observe skeleton loaders for balance cards"
+    ],
+    "edgeCases": [
+      "Slow connection → skeletons visible for longer",
+      "Error loading data → error state replaces skeleton"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-20.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 21,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Trading page displays the full Binance-style layout with chart, order book, order form, and trades",
+    "acceptanceCriteria": [
+      "Given a user navigates to /trade/BTC_USDT",
+      "When the page loads",
+      "Then all trading panels are visible in the correct layout"
+    ],
+    "steps": [
+      "Step 1: Navigate to /trade/BTC_USDT",
+      "Step 2: Verify chart panel occupies ~55% width",
+      "Step 3: Verify order book panel occupies ~20% width",
+      "Step 4: Verify order form panel occupies ~25% width",
+      "Step 5: Verify recent trades section is visible",
+      "Step 6: Verify open orders table at the bottom",
+      "Step 7: Verify trading pair header with price and stats",
+      "Step 8: Verify WebSocket connection indicator"
+    ],
+    "edgeCases": [
+      "Invalid pair in URL → redirect to default pair or 404",
+      "Page maintains layout on window resize > 1024px"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-21.spec.ts",
+    "dependsOn": [
+      5,
+      6,
+      17
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 22,
+    "category": "functional",
+    "priority": 1,
+    "area": "orderbook",
+    "description": "Order book component shows real-time bids and asks with depth bars",
+    "acceptanceCriteria": [
+      "Given the trading page is loaded",
+      "When orders exist in the book",
+      "Then bids (green) and asks (red) are displayed with cumulative depth bars"
+    ],
+    "steps": [
+      "Step 1: Navigate to /trade/BTC_USDT with orders in the book",
+      "Step 2: Verify asks (sell orders) displayed at top in red",
+      "Step 3: Verify spread displayed in the middle",
+      "Step 4: Verify bids (buy orders) displayed at bottom in green",
+      "Step 5: Verify depth bars show cumulative volume",
+      "Step 6: Verify clicking a price fills the order form price field",
+      "Step 7: Verify precision selector dropdown works",
+      "Step 8: Verify three display modes: Both/Asks/Bids",
+      "Step 9: Place a new order and verify book updates in real-time",
+      "Step 10: Cancel an order and verify book updates"
+    ],
+    "edgeCases": [
+      "Empty book → show 'No orders' placeholder",
+      "Very large order → depth bar fills 100%",
+      "Rapid updates → throttled to prevent visual chaos"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-22.spec.ts",
+    "dependsOn": [
+      17,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 23,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Order form supports limit and market order placement with buy/sell toggle",
+    "acceptanceCriteria": [
+      "Given an authenticated user is on the trading page",
+      "When they fill out the order form and submit",
+      "Then the order is placed via API and reflected in open orders"
+    ],
+    "steps": [
+      "Step 1: Verify Limit/Market tabs in order form",
+      "Step 2: Select Limit tab",
+      "Step 3: Toggle between Buy (green) and Sell (red)",
+      "Step 4: Enter price with stepper buttons (+/-)",
+      "Step 5: Enter amount",
+      "Step 6: See auto-calculated total",
+      "Step 7: Use percentage slider (25/50/75/100%)",
+      "Step 8: See available balance displayed",
+      "Step 9: Click Buy/Sell button",
+      "Step 10: Verify order appears in Open Orders table",
+      "Step 11: Switch to Market tab and verify simplified form (no price field)",
+      "Step 12: Verify fee estimation shown"
+    ],
+    "edgeCases": [
+      "Not logged in → show 'Login to Trade' button instead of form",
+      "Insufficient balance → button disabled with message",
+      "Invalid inputs → inline validation errors"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-23.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-23.spec.ts",
+    "dependsOn": [
+      14,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 24,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Open orders table shows user's active orders with cancel action",
+    "acceptanceCriteria": [
+      "Given a user has open orders",
+      "When viewing the open orders tab",
+      "Then all open orders are listed with cancel buttons"
+    ],
+    "steps": [
+      "Step 1: Place several limit orders",
+      "Step 2: Navigate to Open Orders tab at bottom of trading page",
+      "Step 3: Verify columns: Pair, Type, Side, Price, Amount, Filled, Status, Action",
+      "Step 4: Verify each row has a Cancel button",
+      "Step 5: Click Cancel on an order",
+      "Step 6: Verify order disappears from Open Orders",
+      "Step 7: Verify order appears in Order History with status='cancelled'",
+      "Step 8: Verify balance unfrozen"
+    ],
+    "edgeCases": [
+      "No open orders → show empty state message",
+      "Cancel fails (already filled) → error toast",
+      "Real-time update: order fills while viewing → row updates"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-24.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-24.spec.ts",
+    "dependsOn": [
+      14,
+      15,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 25,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Order history table shows past orders with fill details",
+    "acceptanceCriteria": [
+      "Given a user has completed or cancelled orders",
+      "When viewing the Order History tab",
+      "Then past orders are shown with final status and fill information"
+    ],
+    "steps": [
+      "Step 1: Complete several trades (fill orders)",
+      "Step 2: Cancel an order (partial or full)",
+      "Step 3: Navigate to Order History tab",
+      "Step 4: Verify filled orders show status='filled' in green",
+      "Step 5: Verify cancelled orders show status='cancelled' in grey",
+      "Step 6: Verify partially filled then cancelled shows filled amount",
+      "Step 7: Verify pagination works for many orders",
+      "Step 8: Verify average fill price shown for filled orders"
+    ],
+    "edgeCases": [
+      "No history → empty state",
+      "100+ orders → pagination works"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-25.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-25.spec.ts",
+    "dependsOn": [
+      13,
+      15
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 26,
+    "category": "functional",
+    "priority": 1,
+    "area": "websocket",
+    "description": "WebSocket depth channel pushes real-time order book updates",
+    "acceptanceCriteria": [
+      "Given a client subscribes to depth@BTC_USDT",
+      "When the order book changes",
+      "Then incremental updates are pushed with lastUpdateId sequence"
+    ],
+    "steps": [
+      "Step 1: Connect to WebSocket",
+      "Step 2: Subscribe to depth@BTC_USDT@20",
+      "Step 3: Receive full snapshot with bids, asks, lastUpdateId",
+      "Step 4: Subscribe to depth@BTC_USDT for incremental updates",
+      "Step 5: Place an order via REST API",
+      "Step 6: Verify incremental update received with new level",
+      "Step 7: Cancel the order",
+      "Step 8: Verify incremental update received (level removed or qty reduced)",
+      "Step 9: Verify lastUpdateId is monotonically increasing"
+    ],
+    "edgeCases": [
+      "Rapid updates → batched at 100ms intervals",
+      "Subscribe to non-existent pair → error message"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-26.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-26.spec.ts",
+    "dependsOn": [
+      4,
+      17
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 27,
+    "category": "functional",
+    "priority": 1,
+    "area": "websocket",
+    "description": "WebSocket trade channel pushes real-time trade executions",
+    "acceptanceCriteria": [
+      "Given a client subscribes to trade@BTC_USDT",
+      "When a trade executes",
+      "Then the trade is pushed within 100ms"
+    ],
+    "steps": [
+      "Step 1: Connect to WebSocket and subscribe to trade@BTC_USDT",
+      "Step 2: Place matching orders to trigger a trade",
+      "Step 3: Verify trade message received with price, amount, side, timestamp",
+      "Step 4: Verify message arrives within 100ms of trade execution",
+      "Step 5: Place multiple trades and verify all are received in order"
+    ],
+    "edgeCases": [
+      "High-frequency trades → all delivered, none dropped",
+      "Client disconnects and reconnects → gets snapshot on reconnect"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-27.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-27.spec.ts",
+    "dependsOn": [
+      4,
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 28,
+    "category": "functional",
+    "priority": 1,
+    "area": "websocket",
+    "description": "WebSocket ticker channel pushes 24h market statistics",
+    "acceptanceCriteria": [
+      "Given a client subscribes to ticker@BTC_USDT",
+      "When a trade occurs or every second",
+      "Then updated ticker data is pushed with lastPrice, 24h change, volume"
+    ],
+    "steps": [
+      "Step 1: Connect to WebSocket and subscribe to ticker@BTC_USDT",
+      "Step 2: Verify initial ticker data received",
+      "Step 3: Execute a trade",
+      "Step 4: Verify updated lastPrice in next ticker push",
+      "Step 5: Verify 24h high/low/volume fields",
+      "Step 6: Subscribe to ticker@ALL and verify all pairs included"
+    ],
+    "edgeCases": [
+      "No trades in 24h → ticker still pushes with zero change",
+      "Multiple pairs → each pair's ticker independent"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-28.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-28.spec.ts",
+    "dependsOn": [
+      4,
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 29,
+    "category": "functional",
+    "priority": 1,
+    "area": "websocket",
+    "description": "Private WebSocket channels push order and wallet updates to authenticated users",
+    "acceptanceCriteria": [
+      "Given an authenticated user subscribes to private channels",
+      "When their order status changes or balance updates",
+      "Then they receive real-time notifications"
+    ],
+    "steps": [
+      "Step 1: Connect to WebSocket with auth token",
+      "Step 2: Send AUTH message with JWT",
+      "Step 3: Subscribe to 'orders' and 'wallet' channels",
+      "Step 4: Place an order via REST → receive order.placed on WS",
+      "Step 5: When order fills → receive order.filled on WS",
+      "Step 6: Verify wallet balance update received on WS",
+      "Step 7: Cancel an order → receive order.cancelled on WS"
+    ],
+    "edgeCases": [
+      "Subscribe without auth → error response",
+      "Token expires during session → server sends auth-required message",
+      "User A cannot receive User B's private events"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-29.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-29.spec.ts",
+    "dependsOn": [
+      4,
+      8,
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 30,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Recent trades panel shows live trade feed with color-coded buy/sell",
+    "acceptanceCriteria": [
+      "Given the trading page is loaded",
+      "When trades execute",
+      "Then they appear in the recent trades panel with green (buy) or red (sell) coloring"
+    ],
+    "steps": [
+      "Step 1: Navigate to /trade/BTC_USDT",
+      "Step 2: Verify recent trades panel shows time, price, amount columns",
+      "Step 3: Execute a buy-side trade",
+      "Step 4: Verify new trade appears at top of list in green",
+      "Step 5: Execute a sell-side trade",
+      "Step 6: Verify new trade appears at top in red",
+      "Step 7: Verify list scrolls to show new trades",
+      "Step 8: Verify maximum ~50 trades displayed"
+    ],
+    "edgeCases": [
+      "No trades yet → show empty state",
+      "Rapid trades → all displayed without lag"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-30.spec.ts",
+    "dependsOn": [
+      27,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 31,
+    "category": "functional",
+    "priority": 1,
+    "area": "trading",
+    "description": "Trading pair header bar shows last price, 24h change, high/low, and volume",
+    "acceptanceCriteria": [
+      "Given a user is on the trading page",
+      "When viewing the pair header",
+      "Then live price (flashing on change), 24h stats, and favorite toggle are visible"
+    ],
+    "steps": [
+      "Step 1: Navigate to /trade/BTC_USDT",
+      "Step 2: Verify pair name 'BTC/USDT' displayed",
+      "Step 3: Verify last price shown prominently",
+      "Step 4: Verify 24h change percentage (green/red)",
+      "Step 5: Verify 24h high, low, volume stats",
+      "Step 6: Click star icon to toggle favorite",
+      "Step 7: Click pair name to open pair selector",
+      "Step 8: Execute a trade and verify price updates with flash animation"
+    ],
+    "edgeCases": [
+      "No trades → show '--' for price",
+      "Price increase → green flash, price decrease → red flash"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-31.spec.ts",
+    "dependsOn": [
+      28,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 32,
+    "category": "functional",
+    "priority": 2,
+    "area": "trading",
+    "description": "Market orders execute immediately at best available price with optional slippage protection",
+    "acceptanceCriteria": [
+      "Given there are resting orders in the book",
+      "When a user places a market order",
+      "Then it fills immediately at the best available prices"
+    ],
+    "steps": [
+      "Step 1: Populate order book with sell orders at various prices",
+      "Step 2: Place market buy order for 1.0 BTC",
+      "Step 3: Verify order fills at best ask prices",
+      "Step 4: Verify order walks the book if quantity exceeds best level",
+      "Step 5: Verify filled amount and average price in response",
+      "Step 6: Test with maxSlippage parameter",
+      "Step 7: Place market order exceeding slippage → partial fill + cancel remainder",
+      "Step 8: Place market order on empty book → rejected with insufficient_liquidity"
+    ],
+    "edgeCases": [
+      "Empty book → rejected",
+      "Partial liquidity → fills what's available, cancels rest",
+      "maxSlippage exceeded → partial fill + cancel"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-32.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-32.spec.ts",
+    "dependsOn": [
+      13,
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 33,
+    "category": "functional",
+    "priority": 2,
+    "area": "chart",
+    "description": "TradingView Lightweight Charts renders candlestick chart with real-time updates",
+    "acceptanceCriteria": [
+      "Given the trading page is loaded",
+      "When historical candle data is available",
+      "Then a professional candlestick chart renders with live updates"
+    ],
+    "steps": [
+      "Step 1: Navigate to /trade/BTC_USDT",
+      "Step 2: Verify chart panel renders with candlestick data",
+      "Step 3: Verify green candles for price increase, red for decrease",
+      "Step 4: Verify volume bars below candles",
+      "Step 5: Verify crosshair shows OHLCV on hover",
+      "Step 6: Verify chart updates in real-time when trades execute",
+      "Step 7: Verify chart resizes when window resizes",
+      "Step 8: Test fullscreen toggle"
+    ],
+    "edgeCases": [
+      "No candle data → show empty chart with message",
+      "Single candle → renders correctly",
+      "Very long history → chart scrolls/zooms"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-33.spec.ts",
+    "dependsOn": [
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 34,
+    "category": "functional",
+    "priority": 2,
+    "area": "chart",
+    "description": "Chart time interval selector supports 1m to 1W periods",
+    "acceptanceCriteria": [
+      "Given the chart is displayed",
+      "When the user selects a different time interval",
+      "Then the chart reloads with candles for that interval"
+    ],
+    "steps": [
+      "Step 1: Verify time interval buttons: 1m, 5m, 15m, 30m, 1H, 4H, 1D, 1W",
+      "Step 2: Click 1H button",
+      "Step 3: Verify chart updates with 1-hour candles",
+      "Step 4: Verify active interval button is highlighted",
+      "Step 5: Click 1m button",
+      "Step 6: Verify chart updates with 1-minute candles",
+      "Step 7: Verify WS subscription changes to new interval"
+    ],
+    "edgeCases": [
+      "No data for selected interval → show empty chart",
+      "Switch interval while loading → cancel previous, load new"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-34.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-34.spec.ts",
+    "dependsOn": [
+      33
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 35,
+    "category": "functional",
+    "priority": 2,
+    "area": "chart",
+    "description": "Candle aggregation engine computes correct OHLCV from trades",
+    "acceptanceCriteria": [
+      "Given trades execute during a candle period",
+      "When the candle period ends",
+      "Then the candle has correct open, high, low, close, and volume"
+    ],
+    "steps": [
+      "Step 1: Execute trade at price 50000 (first in period → open)",
+      "Step 2: Execute trade at price 50100 (new high)",
+      "Step 3: Execute trade at price 49900 (new low)",
+      "Step 4: Execute trade at price 50050 (close)",
+      "Step 5: Query candle API for this period",
+      "Step 6: Verify O=50000, H=50100, L=49900, C=50050",
+      "Step 7: Verify volume = sum of all trade amounts",
+      "Step 8: Verify quote_volume = sum of (price * amount) per trade",
+      "Step 9: Verify trade_count = 4"
+    ],
+    "edgeCases": [
+      "Single trade in period → O=H=L=C",
+      "No trades → carry-forward candle (O=H=L=C=prev close, V=0)",
+      "Trade at exact period boundary → belongs to new period"
+    ],
+    "verify": [
+      "curl -s 'http://localhost:3000/api/v1/market/candles/BTC_USDT?interval=1m&limit=5' | jq '.data[-1]'"
+    ],
+    "testFile": "tests/e2e/feature-35.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 36,
+    "category": "functional",
+    "priority": 2,
+    "area": "trading",
+    "description": "Trading pair selector modal with search, favorites, and real-time prices",
+    "acceptanceCriteria": [
+      "Given the user clicks the pair name in the header",
+      "When the selector modal opens",
+      "Then all pairs are listed with search, favorites, and live prices"
+    ],
+    "steps": [
+      "Step 1: Click pair name in header bar",
+      "Step 2: Verify modal opens with list of all active pairs",
+      "Step 3: Type 'BTC' in search → filter to BTC pairs only",
+      "Step 4: Verify each pair shows: symbol, price, 24h change",
+      "Step 5: Click star to favorite a pair",
+      "Step 6: Switch to Favorites tab → see starred pairs",
+      "Step 7: Click on ETH/USDT",
+      "Step 8: Verify trading page navigates to /trade/ETH_USDT",
+      "Step 9: Verify modal closes after selection",
+      "Step 10: Test keyboard navigation (↑↓ to select, Enter to confirm)"
+    ],
+    "edgeCases": [
+      "No search results → 'No pairs found' message",
+      "Empty favorites → 'No favorites yet' message",
+      "Esc key closes modal"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-36.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-36.spec.ts",
+    "dependsOn": [
+      12,
+      31
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 37,
+    "category": "functional",
+    "priority": 2,
+    "area": "market",
+    "description": "Markets page lists all trading pairs with 24h stats, search, and sort",
+    "acceptanceCriteria": [
+      "Given a user navigates to /markets",
+      "When the page loads",
+      "Then all trading pairs are listed in a sortable, searchable table"
+    ],
+    "steps": [
+      "Step 1: Navigate to /markets",
+      "Step 2: Verify table with columns: Pair, Price, 24h Change, 24h Volume",
+      "Step 3: Verify prices update in real-time via WebSocket",
+      "Step 4: Type 'ETH' in search → filter results",
+      "Step 5: Click 'Price' column header → sort by price",
+      "Step 6: Click '24h Change' → sort by change percentage",
+      "Step 7: Click on BTC/USDT row → navigate to /trade/BTC_USDT",
+      "Step 8: Verify tab filters: All, USDT, BTC pairs"
+    ],
+    "edgeCases": [
+      "No pairs → empty state",
+      "Suspended pairs → not shown"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/markets"
+    ],
+    "testFile": "tests/e2e/feature-37.spec.ts",
+    "dependsOn": [
+      12,
+      28
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 38,
+    "category": "functional",
+    "priority": 2,
+    "area": "market",
+    "description": "Market-making bot creates realistic order book activity on startup",
+    "acceptanceCriteria": [
+      "Given the server starts with seed data",
+      "When the bot is enabled",
+      "Then it places random orders around current price creating a realistic order book"
+    ],
+    "steps": [
+      "Step 1: Start dev server with market maker enabled",
+      "Step 2: Wait 5 seconds for bot initialization",
+      "Step 3: Check order book depth → verify multiple bid/ask levels",
+      "Step 4: Watch for trades executing (bot creates crossing orders)",
+      "Step 5: Verify chart shows candle data forming",
+      "Step 6: Verify recent trades panel shows activity",
+      "Step 7: Verify the bot can be disabled via config"
+    ],
+    "edgeCases": [
+      "Bot disabled → no automatic activity",
+      "Bot doesn't interfere with real user orders"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/market/depth/BTC_USDT | jq '.data.bids | length'"
+    ],
+    "testFile": "tests/e2e/feature-38.spec.ts",
+    "dependsOn": [
+      3,
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Educational component: students can study/modify the bot"
+  },
+  {
+    "id": 39,
+    "category": "functional",
+    "priority": 2,
+    "area": "navigation",
+    "description": "Landing page displays hero section, CTA, and live ticker marquee",
+    "acceptanceCriteria": [
+      "Given a user visits the root URL",
+      "When the page loads",
+      "Then they see a hero section, Start Trading CTA, and live price ticker"
+    ],
+    "steps": [
+      "Step 1: Navigate to http://localhost:3000",
+      "Step 2: Verify hero section with exchange name/tagline",
+      "Step 3: Verify 'Start Trading' CTA button",
+      "Step 4: Verify live ticker marquee showing pair prices",
+      "Step 5: Click CTA → navigate to /register or /trade",
+      "Step 6: Verify 3-4 feature highlight cards",
+      "Step 7: Verify ticker updates in real-time"
+    ],
+    "edgeCases": [
+      "WebSocket not connected → ticker shows static data",
+      "Already logged in → CTA says 'Go to Trading'"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-39.spec.ts",
+    "dependsOn": [
+      1,
+      5,
+      28
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 40,
+    "category": "functional",
+    "priority": 2,
+    "area": "wallet",
+    "description": "Wallet overview page shows total balance, allocation chart, and asset list",
+    "acceptanceCriteria": [
+      "Given an authenticated user with balances",
+      "When they navigate to /wallet",
+      "Then they see total balance, allocation donut chart, and per-asset breakdown"
+    ],
+    "steps": [
+      "Step 1: Login and deposit multiple currencies",
+      "Step 2: Navigate to /wallet",
+      "Step 3: Verify total balance displayed in USDT equivalent",
+      "Step 4: Verify donut/pie chart shows allocation by asset",
+      "Step 5: Verify asset table: Currency, Available, Frozen, Total, Value",
+      "Step 6: Verify 'Hide small balances' toggle works",
+      "Step 7: Verify Deposit and Withdraw buttons per asset",
+      "Step 8: Click Deposit → navigate to deposit page"
+    ],
+    "edgeCases": [
+      "No balances → show empty state with deposit CTA",
+      "Single currency → donut shows 100%"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/wallet"
+    ],
+    "testFile": "tests/e2e/feature-40.spec.ts",
+    "dependsOn": [
+      10,
+      11
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 41,
+    "category": "functional",
+    "priority": 2,
+    "area": "matching",
+    "description": "Partial fills update order status and create multiple trades",
+    "acceptanceCriteria": [
+      "Given a large buy order",
+      "When it matches against multiple smaller sell orders",
+      "Then multiple trades are created and order status is partially_filled"
+    ],
+    "steps": [
+      "Step 1: Place sell 0.3 BTC @ 50000",
+      "Step 2: Place sell 0.2 BTC @ 50001",
+      "Step 3: Place buy 1.0 BTC @ 50001 (limit)",
+      "Step 4: Verify two trades created: 0.3@50000 and 0.2@50001",
+      "Step 5: Verify buy order status = 'partially_filled', filled_amount = 0.5",
+      "Step 6: Verify remaining 0.5 rests in book at 50001",
+      "Step 7: Verify average price calculated correctly",
+      "Step 8: Cancel remaining → verify status = 'cancelled', filled_amount = 0.5"
+    ],
+    "edgeCases": [
+      "Dust remaining (< min lot size) → auto-fill or auto-cancel",
+      "All sells consumed → remaining becomes maker order"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-41.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-41.spec.ts",
+    "dependsOn": [
+      13,
+      16
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 42,
+    "category": "functional",
+    "priority": 2,
+    "area": "websocket",
+    "description": "WebSocket kline channel pushes real-time candle updates",
+    "acceptanceCriteria": [
+      "Given a client subscribes to kline@BTC_USDT@1m",
+      "When a trade executes",
+      "Then the current candle is pushed with updated OHLCV"
+    ],
+    "steps": [
+      "Step 1: Connect to WebSocket and subscribe to kline@BTC_USDT@1m",
+      "Step 2: Execute a trade",
+      "Step 3: Verify candle update received with correct OHLCV",
+      "Step 4: Verify isClosed=false for in-progress candle",
+      "Step 5: Wait for period boundary",
+      "Step 6: Verify candle with isClosed=true is pushed",
+      "Step 7: Verify new candle starts with open=previous close"
+    ],
+    "edgeCases": [
+      "No trades → carry-forward candle pushed at period boundary",
+      "Multiple trades in same second → all reflected in candle"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-42.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-42.spec.ts",
+    "dependsOn": [
+      4,
+      35
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 43,
+    "category": "functional",
+    "priority": 2,
+    "area": "trading",
+    "description": "Cancel all open orders for a trading pair in one request",
+    "acceptanceCriteria": [
+      "Given a user has multiple open orders for BTC_USDT",
+      "When they call DELETE /api/v1/orders?symbol=BTC_USDT",
+      "Then all open orders for that pair are cancelled"
+    ],
+    "steps": [
+      "Step 1: Place 5 different limit orders for BTC_USDT",
+      "Step 2: Place 2 orders for ETH_USDT (should not be affected)",
+      "Step 3: Call DELETE /api/v1/orders?symbol=BTC_USDT",
+      "Step 4: Verify all 5 BTC_USDT orders are cancelled",
+      "Step 5: Verify ETH_USDT orders remain open",
+      "Step 6: Verify all frozen balances for BTC_USDT orders are unfrozen",
+      "Step 7: Verify WS order.cancelled events received for each order"
+    ],
+    "edgeCases": [
+      "No open orders → success with count=0",
+      "Mixed filled/open → only cancel open ones"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-43.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-43.spec.ts",
+    "dependsOn": [
+      15
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 44,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Order book depth bars visualize cumulative volume with semi-transparent backgrounds",
+    "acceptanceCriteria": [
+      "Given the order book has data",
+      "When viewing the order book component",
+      "Then depth bars fill proportionally to cumulative volume"
+    ],
+    "steps": [
+      "Step 1: Load order book with varying quantities at different price levels",
+      "Step 2: Verify ask side has red semi-transparent depth bars",
+      "Step 3: Verify bid side has green semi-transparent depth bars",
+      "Step 4: Verify bars are proportional to volume at that level vs max",
+      "Step 5: Verify bars fill from right to left",
+      "Step 6: Verify the largest level has a full bar"
+    ],
+    "edgeCases": [
+      "Single level → full bar",
+      "Equal volumes → equal bars"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-44.spec.ts",
+    "dependsOn": [
+      22
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 45,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Price flash animation on order book updates",
+    "acceptanceCriteria": [
+      "Given the order book is displayed",
+      "When a price level updates",
+      "Then a brief flash animation highlights the changed row"
+    ],
+    "steps": [
+      "Step 1: Watch order book while trades are executing",
+      "Step 2: Verify rows flash green when bid quantity increases",
+      "Step 3: Verify rows flash red when ask quantity increases",
+      "Step 4: Verify flash fades out over ~600ms",
+      "Step 5: Verify prefers-reduced-motion disables animation"
+    ],
+    "edgeCases": [
+      "Rapid updates → last flash wins (no stacking)",
+      "prefers-reduced-motion → no animation"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-45.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-45.spec.ts",
+    "dependsOn": [
+      22
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 46,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Buy button is green and sell button is red across all forms",
+    "acceptanceCriteria": [
+      "Given the order form is displayed",
+      "When viewing buy and sell modes",
+      "Then buy button uses green (#0ECB81) and sell button uses red (#F6465D)"
+    ],
+    "steps": [
+      "Step 1: Navigate to trading page",
+      "Step 2: Select Buy mode → verify button is green with white text",
+      "Step 3: Select Sell mode → verify button is red with white text",
+      "Step 4: Verify buy/sell tab indicators match colors",
+      "Step 5: Verify percentage slider accent matches current mode color"
+    ],
+    "edgeCases": [
+      "Disabled button → muted version of the color",
+      "Hover state → slightly lighter shade"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-46.spec.ts",
+    "dependsOn": [
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 47,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Toast notifications for order events: filled (green), partial (yellow), rejected (red)",
+    "acceptanceCriteria": [
+      "Given a user places an order",
+      "When the order reaches a terminal state",
+      "Then a toast notification appears with appropriate color and content"
+    ],
+    "steps": [
+      "Step 1: Place a market order that fills immediately",
+      "Step 2: Verify green toast: 'Order Filled — Bought X BTC @ $Y'",
+      "Step 3: Place a partial fill scenario",
+      "Step 4: Verify yellow toast: 'Partial Fill — X of Y filled'",
+      "Step 5: Place order with insufficient balance",
+      "Step 6: Verify red toast: 'Order Rejected — Insufficient balance'",
+      "Step 7: Verify toasts auto-dismiss after 5 seconds",
+      "Step 8: Verify error toasts persist until manually dismissed"
+    ],
+    "edgeCases": [
+      "Multiple toasts → stack vertically",
+      "Toast includes actionable link (e.g., 'Deposit USDT')"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-47.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-47.spec.ts",
+    "dependsOn": [
+      14,
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 48,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Order form percentage slider allows 25/50/75/100% of available balance",
+    "acceptanceCriteria": [
+      "Given a user has available balance",
+      "When they click percentage buttons on the order form",
+      "Then the amount field is auto-filled to that percentage of available balance"
+    ],
+    "steps": [
+      "Step 1: Login with 10000 USDT available",
+      "Step 2: Set price to 50000 on buy form",
+      "Step 3: Click 25% button → amount = 0.05 BTC (25% of 10000/50000)",
+      "Step 4: Click 50% → amount = 0.1 BTC",
+      "Step 5: Click 75% → amount = 0.15 BTC",
+      "Step 6: Click 100% → amount = 0.2 BTC",
+      "Step 7: Verify total updates automatically",
+      "Step 8: Switch to sell mode → percentage applies to BTC available"
+    ],
+    "edgeCases": [
+      "Zero balance → all percentages show 0",
+      "100% accounts for fees"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-48.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-48.spec.ts",
+    "dependsOn": [
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 49,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "WebSocket connection status indicator in the trading page header",
+    "acceptanceCriteria": [
+      "Given the trading page is loaded",
+      "When the WebSocket connection state changes",
+      "Then a visual indicator shows connected (green), connecting (yellow), or disconnected (red)"
+    ],
+    "steps": [
+      "Step 1: Load trading page → verify green dot indicator",
+      "Step 2: Simulate disconnect → verify yellow 'Reconnecting...' banner",
+      "Step 3: Verify auto-reconnect with exponential backoff",
+      "Step 4: On reconnect → verify green dot returns",
+      "Step 5: After max retries → verify red 'Connection lost' with manual retry button"
+    ],
+    "edgeCases": [
+      "Server restart → auto-reconnect succeeds",
+      "Stale data (>5s since last update) → show warning"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-49.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-49.spec.ts",
+    "dependsOn": [
+      4,
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 50,
+    "category": "style",
+    "priority": 2,
+    "area": "style",
+    "description": "Spread display between bid and ask sides of the order book",
+    "acceptanceCriteria": [
+      "Given bid and ask orders exist",
+      "When viewing the order book",
+      "Then the spread is displayed between best bid and best ask"
+    ],
+    "steps": [
+      "Step 1: Populate order book with bids and asks",
+      "Step 2: Verify spread row between asks and bids sections",
+      "Step 3: Verify spread shows absolute value (e.g., '$5.00')",
+      "Step 4: Verify spread shows percentage (e.g., '0.01%')",
+      "Step 5: Verify spread updates in real-time"
+    ],
+    "edgeCases": [
+      "No asks → spread shows '--'",
+      "No bids → spread shows '--'",
+      "Spread = 0 (crossed book) → immediate matching occurs"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-50.spec.ts",
+    "dependsOn": [
+      22
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 51,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "Stop-loss orders trigger when price reaches stop price and execute as market orders",
+    "acceptanceCriteria": [
+      "Given a user holds BTC and sets a stop-loss sell",
+      "When the market price drops to the stop price",
+      "Then the stop-loss converts to a market sell and executes"
+    ],
+    "steps": [
+      "Step 1: User has 1.0 BTC",
+      "Step 2: Place stop-loss sell: stopPrice=45000, amount=1.0",
+      "Step 3: Verify order status is 'new' (monitoring, not in book)",
+      "Step 4: Execute a trade at 45000 (triggers stop)",
+      "Step 5: Verify stop order converts to market sell",
+      "Step 6: Verify market sell executes against bids",
+      "Step 7: Verify user's BTC balance decreases"
+    ],
+    "edgeCases": [
+      "No bids when triggered → market order fails with insufficient_liquidity",
+      "Price gaps past stop → triggers at first trade below stop",
+      "Multiple stops at same level → all trigger in sequence"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-51.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-51.spec.ts",
+    "dependsOn": [
+      13,
+      32
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 52,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "Stop-limit orders trigger at stop price and place a limit order at limit price",
+    "acceptanceCriteria": [
+      "Given a user sets a stop-limit order",
+      "When the stop price is reached",
+      "Then a limit order is placed at the specified limit price"
+    ],
+    "steps": [
+      "Step 1: Place stop-limit sell: stopPrice=45000, limitPrice=44900, amount=1.0",
+      "Step 2: Execute trade at 45000 (triggers stop)",
+      "Step 3: Verify limit sell order placed at 44900",
+      "Step 4: Verify order appears in order book at 44900",
+      "Step 5: When matched at 44900 → trade executes"
+    ],
+    "edgeCases": [
+      "Limit price far from market → order rests in book",
+      "Stop triggers but limit can't fill → order sits in book"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-52.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-52.spec.ts",
+    "dependsOn": [
+      51
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 53,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "OCO orders link take-profit and stop-loss so one cancels the other",
+    "acceptanceCriteria": [
+      "Given a user places an OCO order",
+      "When either the take-profit or stop-loss triggers",
+      "Then the other leg is automatically cancelled"
+    ],
+    "steps": [
+      "Step 1: Place OCO: take-profit sell@55000, stop-loss sell@45000, amount=1.0",
+      "Step 2: Verify two linked orders created",
+      "Step 3: Trade at 55000 → take-profit triggers and fills",
+      "Step 4: Verify stop-loss order auto-cancelled",
+      "Step 5: Verify oco_pair_id links the two orders",
+      "Step 6: Test reverse: stop-loss triggers → take-profit cancelled"
+    ],
+    "edgeCases": [
+      "Both prices hit in same trade → first triggered wins",
+      "Cancel one leg manually → other remains active"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-53.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-53.spec.ts",
+    "dependsOn": [
+      51,
+      52
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 54,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "IOC (Immediate-Or-Cancel) fills what it can and cancels the rest",
+    "acceptanceCriteria": [
+      "Given a user places an IOC order",
+      "When the order is submitted",
+      "Then it fills available liquidity immediately and cancels any remainder"
+    ],
+    "steps": [
+      "Step 1: Place sell 0.5@50000 in book",
+      "Step 2: Place IOC buy 1.0@50000",
+      "Step 3: Verify trade: 0.5@50000",
+      "Step 4: Verify remaining 0.5 is cancelled (not placed in book)",
+      "Step 5: Verify order final status has filled_amount=0.5"
+    ],
+    "edgeCases": [
+      "Full liquidity available → full fill, no cancel",
+      "Zero liquidity → immediate cancel, filled=0"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-54.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-54.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 55,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "FOK (Fill-Or-Kill) either fills completely or is rejected entirely",
+    "acceptanceCriteria": [
+      "Given a user places a FOK order",
+      "When the book has insufficient liquidity",
+      "Then the entire order is rejected with no partial fills"
+    ],
+    "steps": [
+      "Step 1: Place sell 0.5@50000 in book (only liquidity)",
+      "Step 2: Place FOK buy 1.0@50000",
+      "Step 3: Verify order is cancelled with filled_amount=0",
+      "Step 4: Verify no trades created",
+      "Step 5: Verify user balance unchanged",
+      "Step 6: Place FOK buy 0.3@50000 → verify full fill"
+    ],
+    "edgeCases": [
+      "Exact match → fills",
+      "One share short → entire order rejected"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-55.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-55.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 56,
+    "category": "functional",
+    "priority": 3,
+    "area": "matching",
+    "description": "Self-trade prevention cancels resting order when same user is on both sides",
+    "acceptanceCriteria": [
+      "Given user A has a resting sell order",
+      "When user A places a buy order at the same price",
+      "Then the resting sell order is cancelled (not matched)"
+    ],
+    "steps": [
+      "Step 1: User A places sell 1.0@50000",
+      "Step 2: User A places buy 1.0@50000",
+      "Step 3: Verify sell order is cancelled",
+      "Step 4: Verify buy order remains (either fills against other orders or rests)",
+      "Step 5: Verify no self-trade is recorded"
+    ],
+    "edgeCases": [
+      "Different users at same price → normal match",
+      "STP with partial fills → cancel remaining resting"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-56.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-56.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 57,
+    "category": "functional",
+    "priority": 3,
+    "area": "matching",
+    "description": "Price protection rejects orders that deviate more than 10% from last trade",
+    "acceptanceCriteria": [
+      "Given the last trade was at 50000",
+      "When a user places a limit order at 60000 (20% above)",
+      "Then the order is rejected with price_exceeds_protection_range"
+    ],
+    "steps": [
+      "Step 1: Execute trade at 50000 to establish last price",
+      "Step 2: Place buy limit at 55001 (10.002% above) → rejected",
+      "Step 3: Place buy limit at 54999 (9.998% above) → accepted",
+      "Step 4: Place sell limit at 44999 (10.002% below) → rejected",
+      "Step 5: Verify error message includes max allowed range"
+    ],
+    "edgeCases": [
+      "No last price (first trade ever) → protection skipped",
+      "Admin can configure the percentage per pair"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-57.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-57.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 58,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "2FA (TOTP) setup flow with QR code and verification",
+    "acceptanceCriteria": [
+      "Given a user wants to enable 2FA",
+      "When they complete the setup flow",
+      "Then TOTP is enabled and required on subsequent logins"
+    ],
+    "steps": [
+      "Step 1: Navigate to security settings",
+      "Step 2: Click 'Enable 2FA'",
+      "Step 3: Verify QR code displayed for Google Authenticator",
+      "Step 4: Verify secret key shown as text backup",
+      "Step 5: Enter 6-digit code from authenticator app",
+      "Step 6: Verify 2FA is now enabled",
+      "Step 7: Logout and login again",
+      "Step 8: Verify 2FA code prompt appears after password",
+      "Step 9: Enter correct code → login succeeds",
+      "Step 10: Enter wrong code → login fails"
+    ],
+    "edgeCases": [
+      "Scan QR but never verify → 2FA not enabled",
+      "Try to enable twice → 'Already enabled' message",
+      "Admin can disable user's 2FA via admin panel"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-58.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-58.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 59,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "KYC Level 1 simulated phone verification",
+    "acceptanceCriteria": [
+      "Given a Level 0 user",
+      "When they submit phone verification",
+      "Then they are auto-approved to Level 1"
+    ],
+    "steps": [
+      "Step 1: Login as Level 0 user",
+      "Step 2: Navigate to /account/kyc",
+      "Step 3: See current level: Level 0",
+      "Step 4: Click 'Verify Phone'",
+      "Step 5: Enter phone number",
+      "Step 6: Enter any 6-digit code (simulated)",
+      "Step 7: Verify KYC level updated to Level 1",
+      "Step 8: Verify kyc_verifications record created"
+    ],
+    "edgeCases": [
+      "Already Level 1+ → show current level, no re-verification needed",
+      "Invalid phone format → validation error"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-59.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-59.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Simulated: any 6-digit code accepted"
+  },
+  {
+    "id": 60,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "KYC Level 2 simulated document upload and admin review",
+    "acceptanceCriteria": [
+      "Given a Level 1 user",
+      "When they submit ID documents",
+      "Then the submission enters pending review status"
+    ],
+    "steps": [
+      "Step 1: Login as Level 1 user",
+      "Step 2: Navigate to /account/kyc",
+      "Step 3: Select document type (ID card/passport)",
+      "Step 4: Upload front image (any image accepted)",
+      "Step 5: Upload back image",
+      "Step 6: Upload selfie",
+      "Step 7: Submit for review",
+      "Step 8: Verify status changes to 'pending'",
+      "Step 9: Admin logs in and reviews in KYC queue",
+      "Step 10: Admin approves → user becomes Level 2"
+    ],
+    "edgeCases": [
+      "Non-image file → validation error",
+      "Already Level 2 → no re-submission needed",
+      "Admin rejects → user can resubmit"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-60.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-60.spec.ts",
+    "dependsOn": [
+      59
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": "Simulated: any image accepted"
+  },
+  {
+    "id": 61,
+    "category": "functional",
+    "priority": 3,
+    "area": "wallet",
+    "description": "Simulated withdrawal with multi-step status tracking",
+    "acceptanceCriteria": [
+      "Given an authenticated user with balance",
+      "When they submit a withdrawal request",
+      "Then the withdrawal progresses through status states"
+    ],
+    "steps": [
+      "Step 1: Navigate to wallet withdrawal page",
+      "Step 2: Select currency (USDT)",
+      "Step 3: Select network (ERC20/TRC20)",
+      "Step 4: Enter withdrawal address",
+      "Step 5: Enter amount (verify fee shown)",
+      "Step 6: Confirm withdrawal",
+      "Step 7: See status: pending_approval → processing → confirming → completed",
+      "Step 8: Verify balance decreased by amount + fee",
+      "Step 9: Verify simulated tx_hash generated",
+      "Step 10: Verify withdrawal record in history"
+    ],
+    "edgeCases": [
+      "Insufficient balance → rejected",
+      "Amount below minimum → validation error",
+      "Exceeds daily limit → rejected with message"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-61.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-61.spec.ts",
+    "dependsOn": [
+      10,
+      11
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 62,
+    "category": "functional",
+    "priority": 3,
+    "area": "wallet",
+    "description": "Transaction history shows deposits and withdrawals with filters",
+    "acceptanceCriteria": [
+      "Given a user has deposit and withdrawal history",
+      "When they navigate to transaction history",
+      "Then all transactions are listed with status and filters"
+    ],
+    "steps": [
+      "Step 1: Complete several deposits and withdrawals",
+      "Step 2: Navigate to /wallet/history",
+      "Step 3: Verify table shows: Time, Type, Asset, Amount, Status, TxID",
+      "Step 4: Filter by type: All/Deposit/Withdrawal",
+      "Step 5: Verify deposits show with green color/icon",
+      "Step 6: Verify withdrawals show with red color/icon",
+      "Step 7: Verify pagination for many transactions"
+    ],
+    "edgeCases": [
+      "No transactions → empty state",
+      "Filter returns no results → 'No transactions found'"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/wallet/history"
+    ],
+    "testFile": "tests/e2e/feature-62.spec.ts",
+    "dependsOn": [
+      11,
+      61
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 63,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin dashboard displays KPIs: total users, 24h volume, revenue, pending KYC",
+    "acceptanceCriteria": [
+      "Given an admin user is logged in",
+      "When they navigate to /admin",
+      "Then dashboard shows real-time KPI cards and charts"
+    ],
+    "steps": [
+      "Step 1: Login as admin",
+      "Step 2: Navigate to /admin",
+      "Step 3: Verify KPI card: Total Users count",
+      "Step 4: Verify KPI card: 24h Volume in USDT",
+      "Step 5: Verify KPI card: 24h Fee Revenue",
+      "Step 6: Verify KPI card: Pending KYC count",
+      "Step 7: Verify per-pair volume breakdown",
+      "Step 8: Verify charts render (volume, user growth)"
+    ],
+    "edgeCases": [
+      "No data → cards show 0 or '--'",
+      "Non-admin user → 403 forbidden"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/admin/stats -H 'Authorization: Bearer ADMIN_TOKEN' | jq .data"
+    ],
+    "testFile": "tests/e2e/feature-63.spec.ts",
+    "dependsOn": [
+      3,
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 64,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin trading pair CRUD: create, update, enable/disable pairs",
+    "acceptanceCriteria": [
+      "Given an admin user",
+      "When they manage trading pairs",
+      "Then they can create, edit, and disable pairs"
+    ],
+    "steps": [
+      "Step 1: Navigate to /admin/pairs",
+      "Step 2: Verify all pairs listed with status",
+      "Step 3: Click 'Add Pair'",
+      "Step 4: Fill form: symbol, precision, fees, min amounts",
+      "Step 5: Submit → pair created",
+      "Step 6: Edit an existing pair's fees",
+      "Step 7: Disable a pair → all open orders cancelled",
+      "Step 8: Verify disabled pair hidden from public API",
+      "Step 9: Re-enable pair → pair active again"
+    ],
+    "edgeCases": [
+      "Disable pair with open orders → force cancel all + unfreeze",
+      "Duplicate symbol → error",
+      "Invalid precision → validation error"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-64.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-64.spec.ts",
+    "dependsOn": [
+      3,
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 65,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin fee configuration: set maker/taker fees per trading pair",
+    "acceptanceCriteria": [
+      "Given an admin user",
+      "When they update fee settings for a pair",
+      "Then new trades use the updated fee rates"
+    ],
+    "steps": [
+      "Step 1: Navigate to admin fee configuration",
+      "Step 2: View current maker/taker fees for BTC_USDT",
+      "Step 3: Update maker fee to 8 bps (0.08%)",
+      "Step 4: Update taker fee to 12 bps (0.12%)",
+      "Step 5: Save changes",
+      "Step 6: Execute a trade on BTC_USDT",
+      "Step 7: Verify maker fee = 0.08% of trade amount",
+      "Step 8: Verify taker fee = 0.12% of trade amount"
+    ],
+    "edgeCases": [
+      "Negative fee (rebate) → rejected for MVP",
+      "Zero fee → accepted",
+      "Fee change doesn't affect existing open orders"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-65.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-65.spec.ts",
+    "dependsOn": [
+      64
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 66,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin user management: list, search, freeze/unfreeze users",
+    "acceptanceCriteria": [
+      "Given an admin user",
+      "When they manage users",
+      "Then they can search, view details, and freeze/unfreeze accounts"
+    ],
+    "steps": [
+      "Step 1: Navigate to /admin/users",
+      "Step 2: Verify user list with columns: ID, Email, KYC, Balance, Status",
+      "Step 3: Search by email → filtered results",
+      "Step 4: Click user → view detail panel",
+      "Step 5: Click 'Freeze' → user status = suspended",
+      "Step 6: Verify frozen user cannot login",
+      "Step 7: Click 'Unfreeze' → user status = active",
+      "Step 8: Verify audit log entry created for freeze action"
+    ],
+    "edgeCases": [
+      "Freeze admin → should be prevented or require confirmation",
+      "Freeze user with open orders → orders remain (not auto-cancelled)"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-66.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-66.spec.ts",
+    "dependsOn": [
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 67,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin KYC review queue: approve/reject submissions with reason",
+    "acceptanceCriteria": [
+      "Given there are pending KYC submissions",
+      "When admin reviews them",
+      "Then they can approve or reject with a reason"
+    ],
+    "steps": [
+      "Step 1: Submit Level 2 KYC as regular user",
+      "Step 2: Login as admin, navigate to KYC queue",
+      "Step 3: Verify pending submission visible",
+      "Step 4: Click submission → view documents",
+      "Step 5: Click 'Approve' → user level updated to Level 2",
+      "Step 6: Verify user notified via WS",
+      "Step 7: Submit another KYC, reject it with reason",
+      "Step 8: Verify user sees rejection reason and can resubmit"
+    ],
+    "edgeCases": [
+      "No pending submissions → empty queue",
+      "Approve already approved → no-op"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-67.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-67.spec.ts",
+    "dependsOn": [
+      60,
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 68,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Audit logs track all admin actions with details",
+    "acceptanceCriteria": [
+      "Given admin actions are performed",
+      "When viewing the audit log",
+      "Then all actions are logged with timestamp, admin, action, and details"
+    ],
+    "steps": [
+      "Step 1: Admin performs several actions (freeze user, update fees, approve KYC)",
+      "Step 2: Navigate to /admin/audit-logs",
+      "Step 3: Verify each action has timestamp, admin email, action type",
+      "Step 4: Verify details column shows action-specific info",
+      "Step 5: Verify pagination works",
+      "Step 6: Verify logs are immutable (cannot be deleted)"
+    ],
+    "edgeCases": [
+      "No actions → empty log",
+      "Many actions → paginated"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/admin/audit-logs -H 'Authorization: Bearer ADMIN_TOKEN' | jq '.data | length'"
+    ],
+    "testFile": "tests/e2e/feature-68.spec.ts",
+    "dependsOn": [
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 69,
+    "category": "functional",
+    "priority": 3,
+    "area": "matching",
+    "description": "Order validation checks precision, min/max amounts, and notional value",
+    "acceptanceCriteria": [
+      "Given a trading pair with specific precision and limits",
+      "When a user places an order violating these",
+      "Then the order is rejected with a specific error message"
+    ],
+    "steps": [
+      "Step 1: BTC_USDT has amountPrecision=6, pricePrecision=2",
+      "Step 2: Place order with amount=0.0000001 (7 decimals) → rejected",
+      "Step 3: Place order with price=50000.001 (3 decimals) → rejected",
+      "Step 4: Place order below minAmount → rejected",
+      "Step 5: Place order below minTotal (notional) → rejected",
+      "Step 6: Place valid order → accepted",
+      "Step 7: Verify each rejection has specific error code"
+    ],
+    "edgeCases": [
+      "Exactly at min → accepted",
+      "Price = 0 → rejected",
+      "Amount = 0 → rejected"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-69.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-69.spec.ts",
+    "dependsOn": [
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 70,
+    "category": "functional",
+    "priority": 3,
+    "area": "matching",
+    "description": "Rate limiting restricts order placement to 5 orders per second per user",
+    "acceptanceCriteria": [
+      "Given rate limits are configured",
+      "When a user submits more than 5 orders per second",
+      "Then excess orders are rejected with 429 status"
+    ],
+    "steps": [
+      "Step 1: Rapidly place 6 orders in 1 second",
+      "Step 2: Verify first 5 succeed",
+      "Step 3: Verify 6th returns 429 Too Many Requests",
+      "Step 4: Wait 1 second",
+      "Step 5: Verify next order succeeds",
+      "Step 6: Verify rate limit applies per-user (different user not affected)"
+    ],
+    "edgeCases": [
+      "Rate limit applies to order placement only, not queries",
+      "Admin endpoints have separate rate limits"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-70.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-70.spec.ts",
+    "dependsOn": [
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 71,
+    "category": "functional",
+    "priority": 3,
+    "area": "matching",
+    "description": "Matching engine rebuilds order book from database on server restart",
+    "acceptanceCriteria": [
+      "Given the server crashes or restarts",
+      "When it comes back up",
+      "Then the order book is rebuilt from open orders in the database"
+    ],
+    "steps": [
+      "Step 1: Place several limit orders (some partially filled)",
+      "Step 2: Record the order book state",
+      "Step 3: Restart the server",
+      "Step 4: Wait for startup to complete",
+      "Step 5: Query order book depth",
+      "Step 6: Verify book matches pre-restart state",
+      "Step 7: Place new crossing order → trades execute correctly"
+    ],
+    "edgeCases": [
+      "Empty order book → rebuilds empty",
+      "10k+ orders → rebuilds within 2 seconds",
+      "Partially filled orders → only remaining amount in book"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-71.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-71.spec.ts",
+    "dependsOn": [
+      13,
+      14
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 72,
+    "category": "functional",
+    "priority": 3,
+    "area": "chart",
+    "description": "Historical candle API returns paginated OHLCV data",
+    "acceptanceCriteria": [
+      "Given candles exist in the database",
+      "When calling GET /api/v1/market/candles/:symbol",
+      "Then paginated candle data is returned"
+    ],
+    "steps": [
+      "Step 1: Ensure candle data exists (via bot or manual trades)",
+      "Step 2: Call GET /api/v1/market/candles/BTC_USDT?interval=1m&limit=100",
+      "Step 3: Verify response contains array of candle objects",
+      "Step 4: Each candle has openTime, open, high, low, close, volume",
+      "Step 5: Verify candles are sorted by openTime ascending",
+      "Step 6: Test different intervals: 1m, 5m, 1h, 1d",
+      "Step 7: Verify limit parameter works (default 500, max 1000)"
+    ],
+    "edgeCases": [
+      "No candles → empty array",
+      "Invalid interval → 400 error",
+      "Future time range → empty"
+    ],
+    "verify": [
+      "curl -s 'http://localhost:3000/api/v1/market/candles/BTC_USDT?interval=1h&limit=10' | jq '.data | length'"
+    ],
+    "testFile": "tests/e2e/feature-72.spec.ts",
+    "dependsOn": [
+      35
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 73,
+    "category": "functional",
+    "priority": 3,
+    "area": "chart",
+    "description": "Chart supports technical indicators: MA, EMA, RSI, MACD, Bollinger Bands",
+    "acceptanceCriteria": [
+      "Given the chart is displayed with candle data",
+      "When a user adds technical indicators",
+      "Then they render correctly on or below the chart"
+    ],
+    "steps": [
+      "Step 1: Click 'Indicators' button on chart header",
+      "Step 2: Select 'MA(7)' → verify moving average line on chart",
+      "Step 3: Select 'EMA(25)' → verify exponential MA line",
+      "Step 4: Select 'RSI(14)' → verify RSI in separate pane below",
+      "Step 5: Select 'MACD' → verify MACD histogram in separate pane",
+      "Step 6: Select 'Bollinger Bands(20)' → verify bands on chart",
+      "Step 7: Remove an indicator → verify it disappears"
+    ],
+    "edgeCases": [
+      "Insufficient data for period → indicator partial or hidden",
+      "Multiple indicators → all render without overlap"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-73.spec.ts",
+    "dependsOn": [
+      33,
+      34
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 74,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Order form confirmation dialog for market orders and large orders",
+    "acceptanceCriteria": [
+      "Given a user submits a market order",
+      "When the order is about to be placed",
+      "Then a confirmation dialog shows order details before execution"
+    ],
+    "steps": [
+      "Step 1: Place market buy order",
+      "Step 2: Verify confirmation dialog appears",
+      "Step 3: Dialog shows: Side, Type, Amount, Estimated Total, Fee",
+      "Step 4: Click 'Confirm Buy' → order executes",
+      "Step 5: Click 'Cancel' → order not placed",
+      "Step 6: Verify 'Don't show again' checkbox works"
+    ],
+    "edgeCases": [
+      "Limit orders → no confirmation by default (configurable)",
+      "'Don't show again' persists in localStorage"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-74.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-74.spec.ts",
+    "dependsOn": [
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 75,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Login page with email/password form and password visibility toggle",
+    "acceptanceCriteria": [
+      "Given a user navigates to /login",
+      "When the page loads",
+      "Then a clean login form is displayed with proper styling"
+    ],
+    "steps": [
+      "Step 1: Navigate to /login",
+      "Step 2: Verify centered card layout with logo",
+      "Step 3: Verify email input with label and placeholder",
+      "Step 4: Verify password input with label and visibility toggle",
+      "Step 5: Click eye icon → password visible",
+      "Step 6: Verify Login button styling (primary color)",
+      "Step 7: Verify 'Register' link below form",
+      "Step 8: Verify form validation messages style correctly"
+    ],
+    "edgeCases": [
+      "Mobile → form fills full width",
+      "Error state → red border on invalid fields"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/login"
+    ],
+    "testFile": "tests/e2e/feature-75.spec.ts",
+    "dependsOn": [
+      5,
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 76,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Registration page with password strength meter",
+    "acceptanceCriteria": [
+      "Given a user navigates to /register",
+      "When typing a password",
+      "Then a real-time strength meter shows password quality"
+    ],
+    "steps": [
+      "Step 1: Navigate to /register",
+      "Step 2: Verify form layout matches login page style",
+      "Step 3: Type 'abc' → strength meter shows 'Weak' in red",
+      "Step 4: Type 'Abc1234' → shows 'Medium' in yellow",
+      "Step 5: Type 'Abc1234!' → shows 'Strong' in green",
+      "Step 6: Verify requirement checklist updates in real-time",
+      "Step 7: Verify Terms of Service checkbox"
+    ],
+    "edgeCases": [
+      "Empty password → no strength shown",
+      "Paste password → strength updates"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/register"
+    ],
+    "testFile": "tests/e2e/feature-76.spec.ts",
+    "dependsOn": [
+      5,
+      7
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 77,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Order book precision selector dropdown changes price aggregation",
+    "acceptanceCriteria": [
+      "Given the order book is displayed",
+      "When the user changes precision",
+      "Then price levels are aggregated to the selected precision"
+    ],
+    "steps": [
+      "Step 1: Verify precision dropdown at bottom of order book",
+      "Step 2: Default precision matches pair's price_precision",
+      "Step 3: Select lower precision (e.g., 0.1 → 1)",
+      "Step 4: Verify price levels aggregate (sum quantities)",
+      "Step 5: Select higher precision (e.g., 1 → 0.01)",
+      "Step 6: Verify more price levels shown"
+    ],
+    "edgeCases": [
+      "Only one precision option → dropdown disabled",
+      "Zero orders at aggregated level → level hidden"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-77.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-77.spec.ts",
+    "dependsOn": [
+      22
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 78,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Admin sidebar navigation with icons and active state highlighting",
+    "acceptanceCriteria": [
+      "Given an admin user is on the admin pages",
+      "When navigating between sections",
+      "Then the sidebar shows icons, labels, and highlights the active section"
+    ],
+    "steps": [
+      "Step 1: Login as admin, navigate to /admin",
+      "Step 2: Verify sidebar with sections: Dashboard, Users, Trading, Finance, Audit, Settings",
+      "Step 3: Verify each section has an icon",
+      "Step 4: Click 'Users' → sidebar highlights Users",
+      "Step 5: Verify subsections expand (Users → User List, KYC Queue)",
+      "Step 6: Verify badge shows pending KYC count"
+    ],
+    "edgeCases": [
+      "Mobile → sidebar collapses to hamburger menu",
+      "Zero pending → no badge shown"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/admin"
+    ],
+    "testFile": "tests/e2e/feature-78.spec.ts",
+    "dependsOn": [
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 79,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Admin dashboard KPI cards with trend indicators",
+    "acceptanceCriteria": [
+      "Given the admin dashboard is loaded",
+      "When viewing KPI cards",
+      "Then each card shows the value and trend arrow (up/down)"
+    ],
+    "steps": [
+      "Step 1: Navigate to /admin",
+      "Step 2: Verify 4 KPI cards: Users, Volume, Revenue, Pending KYC",
+      "Step 3: Verify each card has: large number, trend percentage",
+      "Step 4: Verify green arrow for positive trends",
+      "Step 5: Verify red arrow for negative trends"
+    ],
+    "edgeCases": [
+      "No data → show 0 with no trend",
+      "First day → no trend comparison"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/admin"
+    ],
+    "testFile": "tests/e2e/feature-79.spec.ts",
+    "dependsOn": [
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 80,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Security settings page with 2FA status and password management",
+    "acceptanceCriteria": [
+      "Given a user navigates to security settings",
+      "When the page loads",
+      "Then they see 2FA status, password change, and login history"
+    ],
+    "steps": [
+      "Step 1: Navigate to /account/security",
+      "Step 2: Verify password section with 'Change Password' button",
+      "Step 3: Verify 2FA section showing enabled/disabled status",
+      "Step 4: Verify login history section with recent logins",
+      "Step 5: Verify security level indicator (strength bar)"
+    ],
+    "edgeCases": [
+      "2FA not set up → show 'Enable 2FA' button",
+      "No login history → show empty state"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/account/security"
+    ],
+    "testFile": "tests/e2e/feature-80.spec.ts",
+    "dependsOn": [
+      8,
+      58
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 81,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "Password change requires old password and validates new password strength",
+    "acceptanceCriteria": [
+      "Given an authenticated user",
+      "When they change their password",
+      "Then the old password is verified and new password must meet requirements"
+    ],
+    "steps": [
+      "Step 1: Navigate to security settings",
+      "Step 2: Click Change Password",
+      "Step 3: Enter current password",
+      "Step 4: Enter new password (must meet strength requirements)",
+      "Step 5: Confirm new password",
+      "Step 6: Submit → password updated",
+      "Step 7: Logout and login with new password → success",
+      "Step 8: Try login with old password → fails"
+    ],
+    "edgeCases": [
+      "Wrong old password → error",
+      "New password same as old → error",
+      "New password too weak → validation error"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-81.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-81.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 82,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "Login history shows recent login attempts with IP, device, and status",
+    "acceptanceCriteria": [
+      "Given a user has logged in multiple times",
+      "When they view login history",
+      "Then recent logins are listed with details"
+    ],
+    "steps": [
+      "Step 1: Login from different browsers/sessions",
+      "Step 2: Navigate to /account/login-history",
+      "Step 3: Verify list shows: Time, IP Address, Device/Browser, Status",
+      "Step 4: Verify successful logins show green checkmark",
+      "Step 5: Verify failed attempts show red X with reason"
+    ],
+    "edgeCases": [
+      "No login history → empty state",
+      "Many entries → paginated"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/account/login-history"
+    ],
+    "testFile": "tests/e2e/feature-82.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 83,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "Order form Stop-Limit tab with trigger price and limit price inputs",
+    "acceptanceCriteria": [
+      "Given the order form has Stop-Limit tab",
+      "When user fills and submits",
+      "Then a stop-limit order is created"
+    ],
+    "steps": [
+      "Step 1: Click Stop-Limit tab in order form",
+      "Step 2: Verify stop price input with tooltip explaining trigger",
+      "Step 3: Verify limit price input",
+      "Step 4: Enter stop price, limit price, amount",
+      "Step 5: Verify form validates stop price direction (sell stop < market)",
+      "Step 6: Submit → order created in monitoring state",
+      "Step 7: Verify order appears in Open Orders with type 'stop_limit'"
+    ],
+    "edgeCases": [
+      "Stop price above market for sell → validation error",
+      "Stop price = market price → triggers immediately"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-83.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-83.spec.ts",
+    "dependsOn": [
+      23,
+      52
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 84,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "Order form OCO tab with take-profit and stop-loss sections",
+    "acceptanceCriteria": [
+      "Given the order form has OCO tab",
+      "When user fills both legs",
+      "Then linked OCO orders are created"
+    ],
+    "steps": [
+      "Step 1: Click OCO tab in order form",
+      "Step 2: Fill take-profit section: price above market",
+      "Step 3: Fill stop-loss section: stop price below market, limit price",
+      "Step 4: Enter shared amount",
+      "Step 5: Submit → two linked orders created",
+      "Step 6: Verify both appear in Open Orders",
+      "Step 7: Verify 'OCO' label on both orders"
+    ],
+    "edgeCases": [
+      "Take-profit price below market → validation error",
+      "Stop price above market → validation error"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-84.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-84.spec.ts",
+    "dependsOn": [
+      23,
+      53
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 85,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "My trades page shows execution history with fill details",
+    "acceptanceCriteria": [
+      "Given a user has completed trades",
+      "When they view their trade history",
+      "Then individual fills are listed with price, amount, fee, and role"
+    ],
+    "steps": [
+      "Step 1: Execute several trades as both maker and taker",
+      "Step 2: Navigate to /orders (Trade History tab)",
+      "Step 3: Verify columns: Time, Pair, Side, Price, Amount, Fee, Role",
+      "Step 4: Verify maker fills labeled as 'Maker'",
+      "Step 5: Verify taker fills labeled as 'Taker'",
+      "Step 6: Verify pagination works"
+    ],
+    "edgeCases": [
+      "No trades → empty state",
+      "Filter by pair → only that pair shown"
+    ],
+    "verify": [
+      "curl -s 'http://localhost:3000/api/v1/trades/my?symbol=BTC_USDT' -H 'Authorization: Bearer TOKEN' | jq '.data | length'"
+    ],
+    "testFile": "tests/e2e/feature-85.spec.ts",
+    "dependsOn": [
+      13,
+      16
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 86,
+    "category": "functional",
+    "priority": 3,
+    "area": "market",
+    "description": "Public recent trades API returns last 50 trades for a pair",
+    "acceptanceCriteria": [
+      "Given trades have been executed",
+      "When calling GET /api/v1/market/trades/:symbol",
+      "Then the last 50 trades are returned in reverse chronological order"
+    ],
+    "steps": [
+      "Step 1: Execute several trades on BTC_USDT",
+      "Step 2: Call GET /api/v1/market/trades/BTC_USDT?limit=50",
+      "Step 3: Verify response contains trade objects",
+      "Step 4: Each trade has: price, amount, side, timestamp",
+      "Step 5: Verify ordered by timestamp descending",
+      "Step 6: Test limit parameter"
+    ],
+    "edgeCases": [
+      "No trades → empty array",
+      "limit=0 → default (50)"
+    ],
+    "verify": [
+      "curl -s 'http://localhost:3000/api/v1/market/trades/BTC_USDT?limit=10' | jq '.data | length'"
+    ],
+    "testFile": "tests/e2e/feature-86.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 87,
+    "category": "functional",
+    "priority": 3,
+    "area": "market",
+    "description": "24h ticker API returns comprehensive market statistics",
+    "acceptanceCriteria": [
+      "Given trades have occurred in the last 24h",
+      "When calling GET /api/v1/market/ticker/:symbol",
+      "Then complete 24h statistics are returned"
+    ],
+    "steps": [
+      "Step 1: Execute trades over time on BTC_USDT",
+      "Step 2: Call GET /api/v1/market/ticker/BTC_USDT",
+      "Step 3: Verify lastPrice matches latest trade",
+      "Step 4: Verify highPrice/lowPrice for 24h range",
+      "Step 5: Verify volume is sum of all trade amounts in 24h",
+      "Step 6: Verify priceChangePercent computed correctly",
+      "Step 7: Call GET /api/v1/market/ticker for all tickers"
+    ],
+    "edgeCases": [
+      "No trades in 24h → all zeros",
+      "Single trade → high=low=last"
+    ],
+    "verify": [
+      "curl -s http://localhost:3000/api/v1/market/ticker/BTC_USDT | jq .data"
+    ],
+    "testFile": "tests/e2e/feature-87.spec.ts",
+    "dependsOn": [
+      13
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 88,
+    "category": "functional",
+    "priority": 3,
+    "area": "auth",
+    "description": "Logout invalidates refresh token and clears session",
+    "acceptanceCriteria": [
+      "Given a user is logged in",
+      "When they call POST /api/v1/auth/logout",
+      "Then the refresh token is invalidated and session cleared"
+    ],
+    "steps": [
+      "Step 1: Login to get tokens",
+      "Step 2: Call POST /api/v1/auth/logout with refresh token",
+      "Step 3: Verify logout returns success",
+      "Step 4: Attempt to refresh with old token → 401",
+      "Step 5: Verify access token still works until expiry",
+      "Step 6: Verify UI redirects to login page"
+    ],
+    "edgeCases": [
+      "Already logged out → success (idempotent)",
+      "Invalid token → success (no error)"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-88.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-88.spec.ts",
+    "dependsOn": [
+      8,
+      9
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 89,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Wallet deposit page with currency selector, amount input, and confirmation animation",
+    "acceptanceCriteria": [
+      "Given a user navigates to the deposit page",
+      "When the page loads",
+      "Then they see currency selector, amount input, and professional deposit UI"
+    ],
+    "steps": [
+      "Step 1: Navigate to /wallet/deposit",
+      "Step 2: Verify currency selector dropdown",
+      "Step 3: Select USDT → verify simulated address and QR code displayed",
+      "Step 4: Select network (ERC20/TRC20)",
+      "Step 5: Enter amount",
+      "Step 6: Click 'Deposit' → see confirmation progress",
+      "Step 7: Verify animated progress bar (1/3, 2/3, 3/3)"
+    ],
+    "edgeCases": [
+      "Invalid amount → validation error",
+      "Network warning displayed prominently"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/wallet/deposit"
+    ],
+    "testFile": "tests/e2e/feature-89.spec.ts",
+    "dependsOn": [
+      11,
+      40
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 90,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Wallet withdrawal page with address input, network selector, and fee display",
+    "acceptanceCriteria": [
+      "Given a user navigates to the withdrawal page",
+      "When the page loads",
+      "Then they see address input, network selector, amount with fee preview"
+    ],
+    "steps": [
+      "Step 1: Navigate to /wallet/withdraw",
+      "Step 2: Select currency",
+      "Step 3: Select network",
+      "Step 4: Enter withdrawal address",
+      "Step 5: Enter amount → see fee and receive amount calculated",
+      "Step 6: Verify summary card before confirmation",
+      "Step 7: Verify bold network warning message"
+    ],
+    "edgeCases": [
+      "Wrong network warning → prominent red banner",
+      "Amount > available → disabled submit"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/wallet/withdraw"
+    ],
+    "testFile": "tests/e2e/feature-90.spec.ts",
+    "dependsOn": [
+      61,
+      40
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 91,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Empty state illustrations for tables with no data",
+    "acceptanceCriteria": [
+      "Given a table has no data",
+      "When the component renders",
+      "Then a helpful empty state with illustration and CTA is shown"
+    ],
+    "steps": [
+      "Step 1: Login as new user with no orders",
+      "Step 2: Navigate to Open Orders → see 'No open orders' + illustration",
+      "Step 3: Navigate to Trade History → see 'No trades yet' message",
+      "Step 4: Navigate to Wallet → see 'No assets' + Deposit CTA",
+      "Step 5: Verify each empty state has a relevant call-to-action button"
+    ],
+    "edgeCases": [
+      "Loading state shown before empty state",
+      "Empty state disappears when data arrives"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-91.spec.ts",
+    "dependsOn": [
+      20
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 92,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Trading page panel separators with 1px borders between panels",
+    "acceptanceCriteria": [
+      "Given the trading page layout",
+      "When panels are rendered side by side",
+      "Then 1px separators divide each panel clearly"
+    ],
+    "steps": [
+      "Step 1: Navigate to trading page",
+      "Step 2: Verify 1px border between chart and order book",
+      "Step 3: Verify 1px border between order book and order form",
+      "Step 4: Verify 1px border between top panels and bottom panel",
+      "Step 5: Verify borders use --border color token"
+    ],
+    "edgeCases": [
+      "High DPI displays → crisp 1px lines",
+      "Dark theme → subtle borders, not harsh"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-92.spec.ts",
+    "dependsOn": [
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 93,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Order status badges with color coding",
+    "acceptanceCriteria": [
+      "Given orders in various states",
+      "When viewing order tables",
+      "Then each status has a distinct color badge"
+    ],
+    "steps": [
+      "Step 1: Have orders in states: New (blue), Partial (blue/green), Filled (green), Cancelled (grey), Rejected (red)",
+      "Step 2: Navigate to order history",
+      "Step 3: Verify 'Filled' shows green badge",
+      "Step 4: Verify 'Cancelled' shows grey badge",
+      "Step 5: Verify 'Partially Filled' shows progress indicator"
+    ],
+    "edgeCases": [
+      "All statuses visible in one view",
+      "Badges scale with text size"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
+    ],
+    "testFile": "tests/e2e/feature-93.spec.ts",
+    "dependsOn": [
+      25
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 94,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Chart fullscreen toggle expands chart to fill viewport",
+    "acceptanceCriteria": [
+      "Given the chart is displayed",
+      "When the user clicks fullscreen button",
+      "Then the chart fills the entire viewport with an exit button"
+    ],
+    "steps": [
+      "Step 1: Click fullscreen icon on chart header",
+      "Step 2: Verify chart fills viewport (no other panels visible)",
+      "Step 3: Verify Esc key or close button exits fullscreen",
+      "Step 4: Verify chart data and indicators persist in fullscreen",
+      "Step 5: Verify order form overlay available in fullscreen"
+    ],
+    "edgeCases": [
+      "Mobile → fullscreen uses native API if available",
+      "F key shortcut works"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-94.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-94.spec.ts",
+    "dependsOn": [
+      33
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 95,
+    "category": "functional",
+    "priority": 3,
+    "area": "trading",
+    "description": "Clicking order book price row auto-fills the order form price",
+    "acceptanceCriteria": [
+      "Given the order book and order form are displayed",
+      "When the user clicks a price level in the order book",
+      "Then the order form price field is filled with that price"
+    ],
+    "steps": [
+      "Step 1: Verify order book prices are clickable (pointer cursor)",
+      "Step 2: Click an ask price → order form price field updates",
+      "Step 3: Click a bid price → order form price field updates",
+      "Step 4: Verify clicking amount fills amount field",
+      "Step 5: Verify order form switches to Limit tab if on Market"
+    ],
+    "edgeCases": [
+      "Order form in Market mode → switch to Limit on click",
+      "Form has unsaved changes → prompt or overwrite"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-95.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-95.spec.ts",
+    "dependsOn": [
+      22,
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 96,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "Markets page with tab filters: All, USDT, BTC pairs",
+    "acceptanceCriteria": [
+      "Given the markets page is loaded",
+      "When the user selects a tab filter",
+      "Then only pairs matching that quote currency are shown"
+    ],
+    "steps": [
+      "Step 1: Navigate to /markets",
+      "Step 2: Verify tabs: All, USDT, BTC",
+      "Step 3: Click USDT tab → only USDT pairs shown",
+      "Step 4: Click BTC tab → only BTC pairs shown",
+      "Step 5: Click All → all pairs shown",
+      "Step 6: Verify active tab is highlighted"
+    ],
+    "edgeCases": [
+      "Only one pair type → other tabs show 'No pairs'",
+      "Tab persists on page refresh"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/markets"
+    ],
+    "testFile": "tests/e2e/feature-96.spec.ts",
+    "dependsOn": [
+      37
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 97,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "User profile page with nickname edit and KYC level display",
+    "acceptanceCriteria": [
+      "Given an authenticated user",
+      "When they view their profile",
+      "Then their email, nickname (editable), and KYC level are shown"
+    ],
+    "steps": [
+      "Step 1: Navigate to /account/profile",
+      "Step 2: Verify email displayed (not editable)",
+      "Step 3: Verify nickname field (editable)",
+      "Step 4: Edit nickname and save",
+      "Step 5: Verify KYC level badge shown",
+      "Step 6: Verify link to upgrade KYC"
+    ],
+    "edgeCases": [
+      "Long nickname → truncated",
+      "Special characters in nickname → sanitized"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/account/profile"
+    ],
+    "testFile": "tests/e2e/feature-97.spec.ts",
+    "dependsOn": [
+      8
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 98,
+    "category": "style",
+    "priority": 3,
+    "area": "style",
+    "description": "KYC verification page with level progress and upgrade CTAs",
+    "acceptanceCriteria": [
+      "Given a user navigates to KYC page",
+      "When viewing their verification status",
+      "Then they see current level, next level requirements, and upgrade CTA"
+    ],
+    "steps": [
+      "Step 1: Navigate to /account/kyc",
+      "Step 2: Verify current level shown with visual progress",
+      "Step 3: Verify Level 0 → shows 'Verify Phone' CTA",
+      "Step 4: Verify Level 1 → shows 'Upload Documents' CTA",
+      "Step 5: Verify Level 2 → shows 'Fully Verified' badge",
+      "Step 6: Verify trading/withdrawal limits shown per level"
+    ],
+    "edgeCases": [
+      "Pending review → show 'Under Review' status",
+      "Rejected → show reason and resubmit button"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/account/kyc"
+    ],
+    "testFile": "tests/e2e/feature-98.spec.ts",
+    "dependsOn": [
+      59,
+      60
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 99,
+    "category": "functional",
+    "priority": 3,
+    "area": "admin",
+    "description": "Admin system config: maintenance mode, registration toggle, max open orders",
+    "acceptanceCriteria": [
+      "Given an admin user",
+      "When they update system config",
+      "Then the settings take effect immediately"
+    ],
+    "steps": [
+      "Step 1: Navigate to /admin/config",
+      "Step 2: Toggle maintenance mode on",
+      "Step 3: Verify trading endpoints return 503",
+      "Step 4: Toggle maintenance mode off",
+      "Step 5: Set max_open_orders_per_user to 50",
+      "Step 6: Verify user with 50 orders cannot place more",
+      "Step 7: Toggle registration off → /register returns error"
+    ],
+    "edgeCases": [
+      "Invalid config value → validation error",
+      "Config changes logged in audit log"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-99.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-99.spec.ts",
+    "dependsOn": [
+      63
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 100,
+    "category": "functional",
+    "priority": 3,
+    "area": "websocket",
+    "description": "WebSocket reconnection with exponential backoff and snapshot recovery",
+    "acceptanceCriteria": [
+      "Given a WebSocket connection drops",
+      "When the client reconnects",
+      "Then it uses exponential backoff and receives a fresh snapshot"
+    ],
+    "steps": [
+      "Step 1: Establish WS connection and subscribe to depth",
+      "Step 2: Simulate disconnect (server-side)",
+      "Step 3: Verify client retries: 1s, 2s, 4s, 8s, 16s, 30s max",
+      "Step 4: On reconnect, verify fresh depth snapshot received",
+      "Step 5: Verify lastUpdateId is current (not stale)",
+      "Step 6: After 10 failures → show manual retry button"
+    ],
+    "edgeCases": [
+      "Server restarts → client reconnects automatically",
+      "Network flap → reconnects without data loss"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-100.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-100.spec.ts",
+    "dependsOn": [
+      4,
+      26
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 101,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Mobile layout (375px) uses tab-based navigation with sticky order form",
+    "acceptanceCriteria": [
+      "Given a user views the trading page on mobile",
+      "When the viewport is 375px",
+      "Then the layout switches to single-column with tab navigation"
+    ],
+    "steps": [
+      "Step 1: Set viewport to 375px width",
+      "Step 2: Verify bottom navigation bar: Home, Markets, Trade, Wallet, Account",
+      "Step 3: Verify trading page shows tab switcher: Chart, Book, Trades",
+      "Step 4: Verify only one panel visible at a time",
+      "Step 5: Verify sticky order form at bottom",
+      "Step 6: Swipe between tabs"
+    ],
+    "edgeCases": [
+      "Orientation change → layout adapts",
+      "Very small screen (320px) → still usable"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT (375px viewport)"
+    ],
+    "testFile": "tests/e2e/feature-101.spec.ts",
+    "dependsOn": [
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 102,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Tablet layout (768px) stacks chart above side-by-side order book and form",
+    "acceptanceCriteria": [
+      "Given a user views the trading page on tablet",
+      "When the viewport is 768px",
+      "Then the chart is full-width and order book + form are below side-by-side"
+    ],
+    "steps": [
+      "Step 1: Set viewport to 768px",
+      "Step 2: Verify chart takes full width",
+      "Step 3: Verify order book and order form are side by side below chart",
+      "Step 4: Verify open orders panel below",
+      "Step 5: Verify all panels are usable"
+    ],
+    "edgeCases": [
+      "iPad landscape (1024px) → uses desktop layout",
+      "iPad portrait (768px) → tablet layout"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/trade/BTC_USDT (768px viewport)"
+    ],
+    "testFile": "tests/e2e/feature-102.spec.ts",
+    "dependsOn": [
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 103,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Navigation bar collapses to hamburger menu on mobile",
+    "acceptanceCriteria": [
+      "Given a mobile viewport",
+      "When viewing the navbar",
+      "Then nav links collapse into a hamburger menu"
+    ],
+    "steps": [
+      "Step 1: Set viewport to 375px",
+      "Step 2: Verify logo still visible",
+      "Step 3: Verify hamburger icon replaces nav links",
+      "Step 4: Click hamburger → menu slides open",
+      "Step 5: Verify all nav links accessible in menu",
+      "Step 6: Click a link → menu closes, navigation occurs"
+    ],
+    "edgeCases": [
+      "Menu open + scroll → menu stays open",
+      "Click outside menu → closes"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000 (375px viewport)"
+    ],
+    "testFile": "tests/e2e/feature-103.spec.ts",
+    "dependsOn": [
+      6
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 104,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Wallet page responsive layout adapts for mobile",
+    "acceptanceCriteria": [
+      "Given a user views wallet on mobile",
+      "When viewport is 375px",
+      "Then wallet cards stack vertically and are touch-friendly"
+    ],
+    "steps": [
+      "Step 1: Set viewport to 375px",
+      "Step 2: Navigate to /wallet",
+      "Step 3: Verify balance cards stack vertically",
+      "Step 4: Verify donut chart resizes appropriately",
+      "Step 5: Verify deposit/withdraw buttons are full-width",
+      "Step 6: Verify asset table scrolls horizontally if needed"
+    ],
+    "edgeCases": [
+      "Very long currency names → truncated",
+      "Many assets → scrollable list"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/wallet (375px viewport)"
+    ],
+    "testFile": "tests/e2e/feature-104.spec.ts",
+    "dependsOn": [
+      40
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 105,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Admin dashboard responsive layout for tablet and mobile",
+    "acceptanceCriteria": [
+      "Given an admin views dashboard on smaller screens",
+      "When viewport is < 1024px",
+      "Then KPI cards stack and sidebar collapses"
+    ],
+    "steps": [
+      "Step 1: Set viewport to 768px",
+      "Step 2: Verify KPI cards: 2 per row instead of 4",
+      "Step 3: Set viewport to 375px",
+      "Step 4: Verify KPI cards: 1 per row",
+      "Step 5: Verify sidebar becomes top menu or hamburger"
+    ],
+    "edgeCases": [
+      "Charts resize gracefully",
+      "Tables scroll horizontally on mobile"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000/admin (375px viewport)"
+    ],
+    "testFile": "tests/e2e/feature-105.spec.ts",
+    "dependsOn": [
+      63,
+      78
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 106,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Light theme toggle with localStorage persistence",
+    "acceptanceCriteria": [
+      "Given the user clicks the theme toggle",
+      "When switching to light theme",
+      "Then the entire UI updates to light colors and persists across sessions"
+    ],
+    "steps": [
+      "Step 1: Click theme toggle in navbar",
+      "Step 2: Verify background changes to light colors",
+      "Step 3: Verify text changes to dark colors",
+      "Step 4: Verify charts adapt to light theme",
+      "Step 5: Refresh page → light theme persists",
+      "Step 6: Toggle back to dark → persists"
+    ],
+    "edgeCases": [
+      "No localStorage → default to dark",
+      "System preference changes → doesn't override manual choice"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-106.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-106.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 107,
+    "category": "style",
+    "priority": 4,
+    "area": "accessibility",
+    "description": "All interactive elements are keyboard navigable via Tab",
+    "acceptanceCriteria": [
+      "Given a user navigates with keyboard only",
+      "When pressing Tab",
+      "Then focus moves through all interactive elements in logical order"
+    ],
+    "steps": [
+      "Step 1: Load trading page",
+      "Step 2: Press Tab repeatedly",
+      "Step 3: Verify focus ring visible on each element",
+      "Step 4: Verify logical tab order (nav → chart → book → form)",
+      "Step 5: Verify Enter activates buttons",
+      "Step 6: Verify Esc closes modals"
+    ],
+    "edgeCases": [
+      "Focus trap in modals → Tab stays within modal",
+      "Skip to content link → jumps to main content"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-107.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-107.spec.ts",
+    "dependsOn": [
+      21
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 108,
+    "category": "style",
+    "priority": 4,
+    "area": "accessibility",
+    "description": "ARIA labels on order book, order form, and data tables",
+    "acceptanceCriteria": [
+      "Given a screen reader user visits the trading page",
+      "When navigating components",
+      "Then ARIA labels provide meaningful context"
+    ],
+    "steps": [
+      "Step 1: Inspect order book → has role='grid' and aria-label",
+      "Step 2: Inspect order form → has role='form' and aria-label",
+      "Step 3: Verify price updates use aria-live regions",
+      "Step 4: Verify error messages use aria-live='assertive'",
+      "Step 5: Run axe-core accessibility audit",
+      "Step 6: Verify zero critical violations"
+    ],
+    "edgeCases": [
+      "Dynamic content updates → aria-live regions update",
+      "Decorative elements → aria-hidden='true'"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-108.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-108.spec.ts",
+    "dependsOn": [
+      22,
+      23
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 109,
+    "category": "style",
+    "priority": 4,
+    "area": "accessibility",
+    "description": "Color contrast meets WCAG 2.1 AA (4.5:1 for text, 3:1 for large text)",
+    "acceptanceCriteria": [
+      "Given the design tokens are applied",
+      "When checking color contrast ratios",
+      "Then all text meets WCAG AA requirements"
+    ],
+    "steps": [
+      "Step 1: Run axe-core color contrast audit on trading page",
+      "Step 2: Verify primary text on dark background ≥ 4.5:1",
+      "Step 3: Verify secondary text on dark background ≥ 4.5:1",
+      "Step 4: Verify green/red on dark background ≥ 3:1",
+      "Step 5: Run same audit on light theme"
+    ],
+    "edgeCases": [
+      "Buy/sell not distinguishable by color alone (use ▲/▼ arrows too)",
+      "Disabled text → lower contrast acceptable"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-109.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-109.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 110,
+    "category": "style",
+    "priority": 4,
+    "area": "accessibility",
+    "description": "prefers-reduced-motion disables all animations",
+    "acceptanceCriteria": [
+      "Given the user has prefers-reduced-motion: reduce set",
+      "When viewing the trading page",
+      "Then all animations are disabled"
+    ],
+    "steps": [
+      "Step 1: Set prefers-reduced-motion: reduce in browser/OS",
+      "Step 2: Navigate to trading page",
+      "Step 3: Verify no price flash animations",
+      "Step 4: Verify no skeleton pulse animations",
+      "Step 5: Verify transitions are instant (≤ 0.01ms)"
+    ],
+    "edgeCases": [
+      "Media query not supported → animations play normally"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-110.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-110.spec.ts",
+    "dependsOn": [
+      45
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 111,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Input fields have consistent dark styling with yellow focus border",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify input background matches --bg-input",
+      "Step 2: Verify focus state shows yellow border",
+      "Step 3: Verify invalid state shows red border",
+      "Step 4: Verify placeholder text uses --text-tertiary color",
+      "Step 5: Verify monospace font for numeric inputs"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-111.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 112,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Button hover and active states with subtle shade changes",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Hover over Buy button → lighter green",
+      "Step 2: Hover over Sell button → lighter red",
+      "Step 3: Active/pressed → slightly darker",
+      "Step 4: Disabled → muted color + cursor-not-allowed",
+      "Step 5: Verify transition is 150ms ease"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-112.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 113,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Tab component styling with active indicator and hover states",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify tab buttons in order form",
+      "Step 2: Active tab has bottom border indicator",
+      "Step 3: Hover non-active tab → subtle background",
+      "Step 4: Tab content transitions smoothly",
+      "Step 5: Verify keyboard Tab key moves between tabs"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-113.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 114,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Data table styling with alternating row colors and hover highlight",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: View order history table",
+      "Step 2: Verify alternating row backgrounds",
+      "Step 3: Hover row → highlight effect",
+      "Step 4: Verify header row is sticky on scroll",
+      "Step 5: Verify column alignment (numbers right-aligned)"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-114.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 115,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Modal overlay with backdrop blur and centered content",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Open pair selector modal",
+      "Step 2: Verify backdrop overlay with blur effect",
+      "Step 3: Verify modal is centered vertically and horizontally",
+      "Step 4: Verify close button in top-right corner",
+      "Step 5: Verify Esc key closes modal",
+      "Step 6: Verify click outside modal closes it"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-115.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 116,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Chart header buttons with time interval active state",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify time interval buttons are pill-shaped",
+      "Step 2: Active interval has filled background",
+      "Step 3: Inactive intervals have ghost styling",
+      "Step 4: Hover → subtle background change",
+      "Step 5: Verify indicators button and fullscreen icon"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-116.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 117,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Pagination component with page numbers and prev/next arrows",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: View order history with many pages",
+      "Step 2: Verify page numbers shown",
+      "Step 3: Verify current page highlighted",
+      "Step 4: Click next arrow → page advances",
+      "Step 5: Verify first/last page shortcuts"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-117.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 118,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Badge component for KYC levels, order types, and statuses",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify KYC level badges: Level 0 (grey), Level 1 (blue), Level 2 (green)",
+      "Step 2: Verify order type badges: Limit, Market, Stop, OCO",
+      "Step 3: Verify status badges with appropriate colors",
+      "Step 4: Verify badges have rounded corners and consistent padding"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-118.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 119,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Card component styling used for wallet assets and admin KPIs",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify wallet asset cards have --bg-secondary background",
+      "Step 2: Verify subtle border on cards",
+      "Step 3: Verify hover state on clickable cards",
+      "Step 4: Verify admin KPI cards with icon and value layout"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-119.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 120,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Donut chart for wallet allocation with currency labels and percentages",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Navigate to wallet overview",
+      "Step 2: Verify donut chart renders with color segments per currency",
+      "Step 3: Verify currency labels with percentage",
+      "Step 4: Verify chart is interactive (hover shows details)",
+      "Step 5: Verify responsive sizing"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-120.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 121,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Scrollbar styling in dark theme for order book and trade panels",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Verify order book panel has custom scrollbar",
+      "Step 2: Scrollbar thumb uses dark grey color",
+      "Step 3: Scrollbar track is transparent",
+      "Step 4: Verify smooth scrolling behavior",
+      "Step 5: Firefox → custom scrollbar-width and scrollbar-color"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-121.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 122,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Error boundary component shows friendly error message with retry",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Trigger a component error (corrupted data)",
+      "Step 2: Verify error boundary catches it",
+      "Step 3: Verify friendly error message displayed",
+      "Step 4: Verify 'Retry' button present",
+      "Step 5: Click retry → component attempts to reload"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-122.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 123,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Form validation error messages appear inline below inputs",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Submit order form with empty required fields",
+      "Step 2: Verify error messages appear below each invalid input",
+      "Step 3: Verify error message color is red",
+      "Step 4: Verify field border turns red",
+      "Step 5: Fix input → error disappears immediately"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-123.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 124,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Login and register pages are centered and mobile-friendly",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: View /login at 375px → form is centered, full-width",
+      "Step 2: View /register at 375px → form is centered",
+      "Step 3: Verify touch targets are ≥ 44px",
+      "Step 4: Verify virtual keyboard doesn't obscure form"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-124.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 125,
+    "category": "style",
+    "priority": 4,
+    "area": "responsive",
+    "description": "Order book shows 5 levels on mobile vs 15+ on desktop",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: At 1920px → order book shows 15-20 levels per side",
+      "Step 2: At 375px → order book shows 5 levels per side",
+      "Step 3: Verify level count adjusts with viewport",
+      "Step 4: Verify spread is always visible"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-125.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 126,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Footer with project info, GitHub link, and demo disclaimer",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Navigate to landing page",
+      "Step 2: Verify footer at bottom with project name",
+      "Step 3: Verify GitHub repository link",
+      "Step 4: Verify 'Educational demo — no real funds' disclaimer",
+      "Step 5: Verify footer is not visible on trading page (no footer on trading)"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-126.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 127,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Hover tooltip on order book rows showing cumulative depth",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Hover over an order book row",
+      "Step 2: Verify tooltip shows cumulative total at that level",
+      "Step 3: Verify tooltip shows number of orders at that level",
+      "Step 4: Tooltip follows cursor smoothly",
+      "Step 5: Tooltip disappears on mouse leave"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-127.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 128,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Number input with increment/decrement stepper buttons",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Focus on price input in order form",
+      "Step 2: Verify +/- stepper buttons visible",
+      "Step 3: Click + → price increments by tick size",
+      "Step 4: Click - → price decrements",
+      "Step 5: Hold button → continuous increment",
+      "Step 6: Verify up/down arrow keys work when focused"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-128.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 129,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Trade row animation: new trades slide in from top with fade",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Watch recent trades panel",
+      "Step 2: When new trade arrives → row slides in from top",
+      "Step 3: Verify fade-in animation over 300ms",
+      "Step 4: Verify oldest trade at bottom scrolls out",
+      "Step 5: Verify animation respects prefers-reduced-motion"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-129.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 130,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Admin user detail panel with profile, KYC, orders, and balances sections",
+    "acceptanceCriteria": [
+      "Given the UI component is rendered",
+      "When the user interacts with it",
+      "Then the styling matches the design specification"
+    ],
+    "steps": [
+      "Step 1: Click user in admin user list",
+      "Step 2: Verify detail panel shows user email and status",
+      "Step 3: Verify KYC section shows level and documents",
+      "Step 4: Verify orders section shows recent orders",
+      "Step 5: Verify balances section shows all currency balances"
+    ],
+    "edgeCases": [
+      "Theme toggle → styles update correctly",
+      "High DPI display → crisp rendering"
+    ],
+    "verify": [
+      "SCREENSHOT: http://localhost:3000"
+    ],
+    "testFile": "tests/e2e/feature-130.spec.ts",
+    "dependsOn": [
+      5
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 131,
+    "category": "functional",
+    "priority": 4,
+    "area": "auth",
+    "description": "Brute force protection: 5 failed logins trigger 30-minute lockout",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-131.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-131.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 132,
+    "category": "functional",
+    "priority": 4,
+    "area": "matching",
+    "description": "Decimal precision: all financial calculations use big.js, never floating point",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-132.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-132.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 133,
+    "category": "functional",
+    "priority": 4,
+    "area": "wallet",
+    "description": "Wallet available balance always >= 0, enforced by DB CHECK constraint",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-133.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-133.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 134,
+    "category": "functional",
+    "priority": 4,
+    "area": "wallet",
+    "description": "Concurrent withdrawal requests: only one succeeds, race condition prevented",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-134.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-134.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 135,
+    "category": "functional",
+    "priority": 4,
+    "area": "matching",
+    "description": "Maker fee and taker fee calculated correctly per trade and per pair config",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-135.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-135.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 136,
+    "category": "functional",
+    "priority": 4,
+    "area": "admin",
+    "description": "Disabling a trading pair cancels all open orders and sends WS notifications",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-136.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-136.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 137,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Consistent spacing scale: 4px base unit throughout the application",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-137.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-137.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 138,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Typography scale with Inter for UI text and JetBrains Mono for numbers",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-138.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-138.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 139,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Transition timing: 150ms for hovers, 250ms for panels, 350ms for pages",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-139.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-139.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 140,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Order book row height 20-22px for maximum information density",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-140.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-140.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 141,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Chart type selector: Candle, Line, Area chart options",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-141.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-141.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 142,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Order form available balance display updates in real-time via WS",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-142.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-142.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 143,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Admin user management table with bulk selection and actions",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-143.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-143.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 144,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Trading page maintains state when switching between pairs",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-144.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-144.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 145,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Sort indicators (▲/▼) on sortable table columns",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-145.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-145.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 146,
+    "category": "functional",
+    "priority": 4,
+    "area": "market",
+    "description": "Historical candle seed data imported for realistic chart history",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-146.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-146.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 147,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Admin pair creation form with all fields and validation",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-147.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-147.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 148,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "Withdrawal status timeline showing progression through states",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-148.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-148.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 149,
+    "category": "style",
+    "priority": 4,
+    "area": "style",
+    "description": "2FA setup QR code with copy-able secret key fallback",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-149.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-149.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 150,
+    "category": "functional",
+    "priority": 4,
+    "area": "market",
+    "description": "Basic PWA manifest and service worker for app-like mobile experience",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-150.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-150.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 151,
+    "category": "functional",
+    "priority": 5,
+    "area": "matching",
+    "description": "Max open orders per user limit (configurable, default 200)",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-151.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-151.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 152,
+    "category": "functional",
+    "priority": 5,
+    "area": "matching",
+    "description": "Circuit breaker halts trading when price moves >15% in 1 minute",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-152.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-152.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 153,
+    "category": "functional",
+    "priority": 5,
+    "area": "trading",
+    "description": "Order book depth chart (area visualization of cumulative buy/sell depth)",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-153.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-153.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 154,
+    "category": "functional",
+    "priority": 5,
+    "area": "admin",
+    "description": "Admin withdrawal review queue: approve/reject pending withdrawals",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-154.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-154.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 155,
+    "category": "functional",
+    "priority": 5,
+    "area": "admin",
+    "description": "Admin order monitoring: view all active orders across all users",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-155.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-155.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 156,
+    "category": "functional",
+    "priority": 5,
+    "area": "auth",
+    "description": "API key management: create/revoke keys for programmatic access",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-156.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-156.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 157,
+    "category": "functional",
+    "priority": 5,
+    "area": "trading",
+    "description": "Keyboard shortcuts: B for buy, S for sell, 1-4 for order types, F for fullscreen",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-157.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-157.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 158,
+    "category": "functional",
+    "priority": 5,
+    "area": "market",
+    "description": "Favorites system: star pairs and filter by favorites across pages",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-158.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-158.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 159,
+    "category": "functional",
+    "priority": 5,
+    "area": "chart",
+    "description": "Chart drawing tools: trend lines, horizontal lines, Fibonacci retracement",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-159.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-159.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 160,
+    "category": "functional",
+    "priority": 5,
+    "area": "trading",
+    "description": "Order book display mode toggle: Asks only, Bids only, Both",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-160.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-160.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 161,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Landing page feature highlight cards with icons",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-161.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-161.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 162,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Ticker marquee on landing page with scrolling pair prices",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-162.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-162.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 163,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Admin charts: 24h volume bar chart and user growth line chart",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-163.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-163.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 164,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Colorblind-friendly mode: Blue (buy) / Orange (sell) alternative",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-164.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-164.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 165,
+    "category": "style",
+    "priority": 5,
+    "area": "responsive",
+    "description": "Mobile bottom sheet for order form with pull-up handle",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-165.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-165.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 166,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Admin trading pair status indicators: Live (green), Maintenance (yellow), Offline (red)",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-166.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-166.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 167,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Real-time balance update animation in order form when trade fills",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-167.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-167.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 168,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Order book center button to snap scroll back to spread",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-168.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-168.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 169,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Markets page top movers section showing biggest 24h gainers/losers",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-169.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-169.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 170,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Admin alert panel showing recent risk events (large withdrawals, failed logins)",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-170.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-170.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 171,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Chart OHLCV info bar above chart showing current crosshair values",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-171.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-171.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 172,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Order form fee estimation displayed before submission",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-172.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-172.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 173,
+    "category": "functional",
+    "priority": 5,
+    "area": "websocket",
+    "description": "WebSocket subscription to ticker@ALL for markets page real-time updates",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-173.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-173.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 174,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Admin pair edit form with live preview of precision settings",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-174.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-174.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  },
+  {
+    "id": 175,
+    "category": "style",
+    "priority": 5,
+    "area": "style",
+    "description": "Micro-copy and contextual help tooltips on order form fields",
+    "acceptanceCriteria": [
+      "Given the feature is implemented",
+      "When testing the described behavior",
+      "Then it meets the acceptance criteria"
+    ],
+    "steps": [
+      "Step 1: Navigate to the relevant page",
+      "Step 2: Trigger the described behavior",
+      "Step 3: Verify the expected outcome",
+      "Step 4: Test edge cases",
+      "Step 5: Verify across different viewports"
+    ],
+    "edgeCases": [
+      "Standard edge cases apply per feature type"
+    ],
+    "verify": [
+      "E2E: tests/e2e/feature-175.spec.ts"
+    ],
+    "testFile": "tests/e2e/feature-175.spec.ts",
+    "dependsOn": [
+      1
+    ],
+    "passes": false,
+    "implementedAt": null,
+    "sessionId": null,
+    "notes": ""
+  }
+]
