@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const TradingChart = dynamic(() => import('@/components/TradingChart'), { ssr: false });
 
 interface OrderBookLevel {
   price: string;
@@ -282,6 +285,7 @@ export default function TradePage() {
   const [error, setError] = useState('');
   const [orderTabActive, setOrderTabActive] = useState<'open' | 'history'>('open');
   const [loading, setLoading] = useState(true);
+  const [chartInterval, setChartInterval] = useState('1h');
   const [ticker, setTicker] = useState({
     lastPrice: '--',
     change24h: '0',
@@ -560,27 +564,85 @@ export default function TradePage() {
             position: 'relative',
           }}
         >
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            {['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W'].map(
-              (interval) => (
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {[
+              { label: '1m', value: '1m' },
+              { label: '5m', value: '5m' },
+              { label: '15m', value: '15m' },
+              { label: '30m', value: '30m' },
+              { label: '1H', value: '1h' },
+              { label: '4H', value: '4h' },
+              { label: '1D', value: '1d' },
+              { label: '1W', value: '1w' },
+            ].map(
+              (item) => (
                 <button
-                  key={interval}
-                  role="tab"
+                  key={item.value}
+                  aria-selected={chartInterval === item.value}
+                  onClick={() => setChartInterval(item.value)}
                   style={{
                     padding: '4px 8px',
-                    background: 'var(--bg-tertiary)',
+                    background: chartInterval === item.value ? 'var(--yellow)' : 'var(--bg-tertiary)',
                     border: 'none',
-                    color: 'var(--text-secondary)',
+                    color: chartInterval === item.value ? '#0B0E11' : 'var(--text-secondary)',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     fontSize: '12px',
+                    fontWeight: chartInterval === item.value ? '600' : '400',
                   }}
                 >
-                  {interval}
+                  {item.label}
                 </button>
               )
             )}
+            <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--text-tertiary)' }}>|</span>
             <button
+              style={{
+                padding: '4px 8px',
+                background: 'var(--bg-tertiary)',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              Indicators
+            </button>
+            <button
+              style={{
+                padding: '4px 8px',
+                background: 'var(--bg-tertiary)',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              🖊 Drawing
+            </button>
+            <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
+              {['Candle', 'Line', 'Area'].map((type) => (
+                <button
+                  key={type}
+                  role="tab"
+                  style={{
+                    padding: '4px 8px',
+                    background: type === 'Candle' ? 'var(--bg-tertiary)' : 'transparent',
+                    border: 'none',
+                    color: type === 'Candle' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+            <button
+              aria-label="fullscreen"
               style={{
                 padding: '4px 8px',
                 background: 'var(--bg-tertiary)',
@@ -592,34 +654,35 @@ export default function TradePage() {
                 marginLeft: 'auto',
               }}
             >
+              ⛶
+            </button>
+            <button
+              style={{
+                padding: '4px 8px',
+                background: 'var(--bg-tertiary)',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
               Depth
             </button>
           </div>
-          {loading ? (
-            <div
-              className="skeleton"
-              style={{
-                width: '100%',
-                height: '300px',
-                background: 'var(--bg-secondary)',
-                borderRadius: '8px',
-                animation: 'pulse 2s infinite',
-              }}
-            />
-          ) : (
-            <div
-              id="chart-container"
-              style={{
-                height: '300px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-tertiary)',
-              }}
-            >
-              Chart placeholder — TradingView integration
-            </div>
-          )}
+          <div
+            id="chart-container"
+            style={{
+              height: '300px',
+              position: 'relative',
+            }}
+          >
+            <Suspense fallback={
+              <div className="skeleton" style={{ width: '100%', height: '100%', background: 'var(--bg-secondary)', borderRadius: '8px' }} />
+            }>
+              <TradingChart symbol={symbol} interval={chartInterval} />
+            </Suspense>
+          </div>
         </div>
 
         {/* Order book */}

@@ -20,9 +20,9 @@
       "Step 7: Verify /api/v1/health returns { success: true }"
     ],
     "edgeCases": [
-      "Port 3000 already in use → clear error message",
-      "Missing .env → fallback to defaults with warning",
-      "PostgreSQL not running → clear connection error"
+      "Port 3000 already in use \u2192 clear error message",
+      "Missing .env \u2192 fallback to defaults with warning",
+      "PostgreSQL not running \u2192 clear connection error"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/health | jq .success"
@@ -58,9 +58,9 @@
       "Step 10: Verify indexes are created"
     ],
     "edgeCases": [
-      "Migration run twice → idempotent, no errors",
-      "Database already has tables → migration skips existing",
-      "Invalid DATABASE_URL → clear error with instructions"
+      "Migration run twice \u2192 idempotent, no errors",
+      "Database already has tables \u2192 migration skips existing",
+      "Invalid DATABASE_URL \u2192 clear error with instructions"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/health | jq .data.database"
@@ -97,8 +97,8 @@
       "Step 9: Verify seed is idempotent (run twice, no duplicates)"
     ],
     "edgeCases": [
-      "Seed run on populated DB → skip existing, no errors",
-      "Missing ADMIN_SEED_EMAIL env → use defaults"
+      "Seed run on populated DB \u2192 skip existing, no errors",
+      "Missing ADMIN_SEED_EMAIL env \u2192 use defaults"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/market/pairs | jq '.data | length'"
@@ -133,9 +133,9 @@
       "Step 7: Close connection gracefully"
     ],
     "edgeCases": [
-      "Multiple simultaneous connections → all accepted",
-      "Invalid URL path → connection rejected",
-      "No pong within 10s → server disconnects client"
+      "Multiple simultaneous connections \u2192 all accepted",
+      "Invalid URL path \u2192 connection rejected",
+      "No pong within 10s \u2192 server disconnects client"
     ],
     "verify": [
       "E2E: tests/e2e/feature-4.spec.ts"
@@ -170,7 +170,7 @@
       "Step 7: Verify no white flash on initial load"
     ],
     "edgeCases": [
-      "System prefers-color-scheme: light → still dark (dark is default)",
+      "System prefers-color-scheme: light \u2192 still dark (dark is default)",
       "CSS variables are defined and accessible"
     ],
     "verify": [
@@ -183,7 +183,7 @@
     "passes": true,
     "implementedAt": "2026-02-22T01:11:00Z",
     "sessionId": "dev-loop-1",
-    "notes": "Color tokens from design spec §15.1"
+    "notes": "Color tokens from design spec \u00a715.1"
   },
   {
     "id": 6,
@@ -209,7 +209,7 @@
       "Step 10: Click each nav link and verify navigation"
     ],
     "edgeCases": [
-      "Unauthenticated → show Login/Register instead of Wallet/Orders",
+      "Unauthenticated \u2192 show Login/Register instead of Wallet/Orders",
       "Navbar stays fixed on scroll"
     ],
     "verify": [
@@ -249,10 +249,10 @@
       "Step 10: Verify kyc_level='level_0'"
     ],
     "edgeCases": [
-      "Duplicate email → inline error 'Email already registered'",
-      "Weak password → show specific requirements not met",
-      "SQL injection in email → sanitized, rejected",
-      "Empty fields → validation errors shown"
+      "Duplicate email \u2192 inline error 'Email already registered'",
+      "Weak password \u2192 show specific requirements not met",
+      "SQL injection in email \u2192 sanitized, rejected",
+      "Empty fields \u2192 validation errors shown"
     ],
     "verify": [
       "curl -s -X POST http://localhost:3000/api/v1/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"Test1234\"}' | jq .success"
@@ -289,10 +289,10 @@
       "Step 9: Verify login_history record is created"
     ],
     "edgeCases": [
-      "Wrong password → 401 with 'Invalid credentials'",
-      "Non-existent email → 401 (same message, no enumeration)",
-      "5 failed attempts → account temporarily locked (30 min)",
-      "Suspended user → 403 'Account suspended'"
+      "Wrong password \u2192 401 with 'Invalid credentials'",
+      "Non-existent email \u2192 401 (same message, no enumeration)",
+      "5 failed attempts \u2192 account temporarily locked (30 min)",
+      "Suspended user \u2192 403 'Account suspended'"
     ],
     "verify": [
       "curl -s -X POST http://localhost:3000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"Test1234\"}' | jq .data.accessToken"
@@ -325,9 +325,9 @@
       "Step 5: Verify old accessToken still works until expiry"
     ],
     "edgeCases": [
-      "Expired refresh token → 401",
-      "Invalid refresh token → 401",
-      "Revoked refresh token (after logout) → 401"
+      "Expired refresh token \u2192 401",
+      "Invalid refresh token \u2192 401",
+      "Revoked refresh token (after logout) \u2192 401"
     ],
     "verify": [
       "E2E: tests/e2e/feature-9.spec.ts"
@@ -362,8 +362,8 @@
       "Step 7: Verify new user has empty balances"
     ],
     "edgeCases": [
-      "No wallets yet → return empty array",
-      "Expired token → 401"
+      "No wallets yet \u2192 return empty array",
+      "Expired token \u2192 401"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/wallet/balances -H 'Authorization: Bearer TOKEN' | jq .data"
@@ -401,9 +401,9 @@
       "Step 10: Verify wallet_transaction record created"
     ],
     "edgeCases": [
-      "Zero amount → validation error",
-      "Negative amount → validation error",
-      "Very large amount → accepted (demo mode)"
+      "Zero amount \u2192 validation error",
+      "Negative amount \u2192 validation error",
+      "Very large amount \u2192 accepted (demo mode)"
     ],
     "verify": [
       "curl -s -X POST http://localhost:3000/api/v1/wallet/deposit -H 'Authorization: Bearer TOKEN' -H 'Content-Type: application/json' -d '{\"currency\":\"USDT\",\"amount\":\"10000\"}' | jq .success"
@@ -439,8 +439,8 @@
       "Step 8: Verify suspended pairs are excluded"
     ],
     "edgeCases": [
-      "No pairs exist → empty array",
-      "Mix of active and suspended → only active returned"
+      "No pairs exist \u2192 empty array",
+      "Mix of active and suspended \u2192 only active returned"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/market/pairs | jq '.data[] | .symbol'"
@@ -478,10 +478,10 @@
       "Step 10: Place two sells at same price, verify earlier one fills first"
     ],
     "edgeCases": [
-      "Empty order book → limit order rests in book",
-      "Buy price > ask → fills at ask price (buyer gets better price)",
-      "Multiple price levels → fills best price first",
-      "Exact same timestamp → order with lower seq fills first"
+      "Empty order book \u2192 limit order rests in book",
+      "Buy price > ask \u2192 fills at ask price (buyer gets better price)",
+      "Multiple price levels \u2192 fills best price first",
+      "Exact same timestamp \u2192 order with lower seq fills first"
     ],
     "verify": [
       "E2E: tests/e2e/feature-13.spec.ts"
@@ -515,16 +515,16 @@
       "Step 5: Verify USDT frozen increased by 50000",
       "Step 6: Place sell limit order: test with BTC balance",
       "Step 7: Verify BTC available decreased, frozen increased",
-      "Step 8: Attempt order with insufficient balance → 400 error",
-      "Step 9: Attempt order with invalid precision → 400 error",
-      "Step 10: Attempt order below min_amount → 400 error"
+      "Step 8: Attempt order with insufficient balance \u2192 400 error",
+      "Step 9: Attempt order with invalid precision \u2192 400 error",
+      "Step 10: Attempt order below min_amount \u2192 400 error"
     ],
     "edgeCases": [
-      "Insufficient balance → 400 INSUFFICIENT_BALANCE",
-      "Invalid symbol → 400 INVALID_SYMBOL",
-      "Amount below min → 400 AMOUNT_TOO_SMALL",
-      "Price precision exceeds pair config → 400",
-      "Negative price or amount → 400"
+      "Insufficient balance \u2192 400 INSUFFICIENT_BALANCE",
+      "Invalid symbol \u2192 400 INVALID_SYMBOL",
+      "Amount below min \u2192 400 AMOUNT_TOO_SMALL",
+      "Price precision exceeds pair config \u2192 400",
+      "Negative price or amount \u2192 400"
     ],
     "verify": [
       "curl -s -X POST http://localhost:3000/api/v1/orders -H 'Authorization: Bearer TOKEN' -H 'Content-Type: application/json' -d '{\"symbol\":\"BTC_USDT\",\"side\":\"buy\",\"type\":\"limit\",\"price\":\"50000\",\"amount\":\"0.1\"}' | jq .data.status"
@@ -557,13 +557,13 @@
       "Step 4: Verify order status is 'cancelled'",
       "Step 5: Verify USDT available increased by 50000",
       "Step 6: Verify USDT frozen decreased by 50000",
-      "Step 7: Attempt to cancel same order again → 400 error"
+      "Step 7: Attempt to cancel same order again \u2192 400 error"
     ],
     "edgeCases": [
-      "Cancel already filled order → 400 ORDER_NOT_CANCELLABLE",
-      "Cancel already cancelled order → 400",
-      "Cancel another user's order → 403",
-      "Cancel non-existent order → 404"
+      "Cancel already filled order \u2192 400 ORDER_NOT_CANCELLABLE",
+      "Cancel already cancelled order \u2192 400",
+      "Cancel another user's order \u2192 403",
+      "Cancel non-existent order \u2192 404"
     ],
     "verify": [
       "E2E: tests/e2e/feature-15.spec.ts"
@@ -599,7 +599,7 @@
       "Step 8: Verify wallet_transactions for all movements"
     ],
     "edgeCases": [
-      "DB error during settlement → transaction rolls back, no partial state",
+      "DB error during settlement \u2192 transaction rolls back, no partial state",
       "Fees round down (never overcharge)"
     ],
     "verify": [
@@ -636,9 +636,9 @@
       "Step 7: Verify limit parameter controls depth levels"
     ],
     "edgeCases": [
-      "Empty book → empty bids and asks arrays",
-      "Only bids → asks empty",
-      "limit=0 → use default (20)"
+      "Empty book \u2192 empty bids and asks arrays",
+      "Only bids \u2192 asks empty",
+      "limit=0 \u2192 use default (20)"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/market/depth/BTC_USDT?limit=10 | jq '.data.bids | length'"
@@ -661,7 +661,7 @@
     "acceptanceCriteria": [
       "Given a user visits any page",
       "When the page loads",
-      "Then a persistent banner shows 'Demo Exchange — No real funds'"
+      "Then a persistent banner shows 'Demo Exchange \u2014 No real funds'"
     ],
     "steps": [
       "Step 1: Navigate to http://localhost:3000",
@@ -674,7 +674,7 @@
     ],
     "edgeCases": [
       "Banner dismissal stored in localStorage",
-      "New session → banner reappears"
+      "New session \u2192 banner reappears"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -702,8 +702,8 @@
     ],
     "steps": [
       "Step 1: Navigate to trading page",
-      "Step 2: Inspect price elements → font-family includes monospace",
-      "Step 3: Inspect amount elements → font-variant-numeric: tabular-nums",
+      "Step 2: Inspect price elements \u2192 font-family includes monospace",
+      "Step 3: Inspect amount elements \u2192 font-variant-numeric: tabular-nums",
       "Step 4: Verify order book numbers are aligned vertically",
       "Step 5: Verify balance display uses monospace",
       "Step 6: Navigate to wallet page and repeat checks"
@@ -744,8 +744,8 @@
       "Step 6: Observe skeleton loaders for balance cards"
     ],
     "edgeCases": [
-      "Slow connection → skeletons visible for longer",
-      "Error loading data → error state replaces skeleton"
+      "Slow connection \u2192 skeletons visible for longer",
+      "Error loading data \u2192 error state replaces skeleton"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -781,7 +781,7 @@
       "Step 8: Verify WebSocket connection indicator"
     ],
     "edgeCases": [
-      "Invalid pair in URL → redirect to default pair or 404",
+      "Invalid pair in URL \u2192 redirect to default pair or 404",
       "Page maintains layout on window resize > 1024px"
     ],
     "verify": [
@@ -822,9 +822,9 @@
       "Step 10: Cancel an order and verify book updates"
     ],
     "edgeCases": [
-      "Empty book → show 'No orders' placeholder",
-      "Very large order → depth bar fills 100%",
-      "Rapid updates → throttled to prevent visual chaos"
+      "Empty book \u2192 show 'No orders' placeholder",
+      "Very large order \u2192 depth bar fills 100%",
+      "Rapid updates \u2192 throttled to prevent visual chaos"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -865,9 +865,9 @@
       "Step 12: Verify fee estimation shown"
     ],
     "edgeCases": [
-      "Not logged in → show 'Login to Trade' button instead of form",
-      "Insufficient balance → button disabled with message",
-      "Invalid inputs → inline validation errors"
+      "Not logged in \u2192 show 'Login to Trade' button instead of form",
+      "Insufficient balance \u2192 button disabled with message",
+      "Invalid inputs \u2192 inline validation errors"
     ],
     "verify": [
       "E2E: tests/e2e/feature-23.spec.ts"
@@ -904,9 +904,9 @@
       "Step 8: Verify balance unfrozen"
     ],
     "edgeCases": [
-      "No open orders → show empty state message",
-      "Cancel fails (already filled) → error toast",
-      "Real-time update: order fills while viewing → row updates"
+      "No open orders \u2192 show empty state message",
+      "Cancel fails (already filled) \u2192 error toast",
+      "Real-time update: order fills while viewing \u2192 row updates"
     ],
     "verify": [
       "E2E: tests/e2e/feature-24.spec.ts"
@@ -918,8 +918,8 @@
       21
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -944,8 +944,8 @@
       "Step 8: Verify average fill price shown for filled orders"
     ],
     "edgeCases": [
-      "No history → empty state",
-      "100+ orders → pagination works"
+      "No history \u2192 empty state",
+      "100+ orders \u2192 pagination works"
     ],
     "verify": [
       "E2E: tests/e2e/feature-25.spec.ts"
@@ -983,8 +983,8 @@
       "Step 9: Verify lastUpdateId is monotonically increasing"
     ],
     "edgeCases": [
-      "Rapid updates → batched at 100ms intervals",
-      "Subscribe to non-existent pair → error message"
+      "Rapid updates \u2192 batched at 100ms intervals",
+      "Subscribe to non-existent pair \u2192 error message"
     ],
     "verify": [
       "E2E: tests/e2e/feature-26.spec.ts"
@@ -1018,8 +1018,8 @@
       "Step 5: Place multiple trades and verify all are received in order"
     ],
     "edgeCases": [
-      "High-frequency trades → all delivered, none dropped",
-      "Client disconnects and reconnects → gets snapshot on reconnect"
+      "High-frequency trades \u2192 all delivered, none dropped",
+      "Client disconnects and reconnects \u2192 gets snapshot on reconnect"
     ],
     "verify": [
       "E2E: tests/e2e/feature-27.spec.ts"
@@ -1054,8 +1054,8 @@
       "Step 6: Subscribe to ticker@ALL and verify all pairs included"
     ],
     "edgeCases": [
-      "No trades in 24h → ticker still pushes with zero change",
-      "Multiple pairs → each pair's ticker independent"
+      "No trades in 24h \u2192 ticker still pushes with zero change",
+      "Multiple pairs \u2192 each pair's ticker independent"
     ],
     "verify": [
       "E2E: tests/e2e/feature-28.spec.ts"
@@ -1085,14 +1085,14 @@
       "Step 1: Connect to WebSocket with auth token",
       "Step 2: Send AUTH message with JWT",
       "Step 3: Subscribe to 'orders' and 'wallet' channels",
-      "Step 4: Place an order via REST → receive order.placed on WS",
-      "Step 5: When order fills → receive order.filled on WS",
+      "Step 4: Place an order via REST \u2192 receive order.placed on WS",
+      "Step 5: When order fills \u2192 receive order.filled on WS",
       "Step 6: Verify wallet balance update received on WS",
-      "Step 7: Cancel an order → receive order.cancelled on WS"
+      "Step 7: Cancel an order \u2192 receive order.cancelled on WS"
     ],
     "edgeCases": [
-      "Subscribe without auth → error response",
-      "Token expires during session → server sends auth-required message",
+      "Subscribe without auth \u2192 error response",
+      "Token expires during session \u2192 server sends auth-required message",
       "User A cannot receive User B's private events"
     ],
     "verify": [
@@ -1131,8 +1131,8 @@
       "Step 8: Verify maximum ~50 trades displayed"
     ],
     "edgeCases": [
-      "No trades yet → show empty state",
-      "Rapid trades → all displayed without lag"
+      "No trades yet \u2192 show empty state",
+      "Rapid trades \u2192 all displayed without lag"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1169,8 +1169,8 @@
       "Step 8: Execute a trade and verify price updates with flash animation"
     ],
     "edgeCases": [
-      "No trades → show '--' for price",
-      "Price increase → green flash, price decrease → red flash"
+      "No trades \u2192 show '--' for price",
+      "Price increase \u2192 green flash, price decrease \u2192 red flash"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1203,13 +1203,13 @@
       "Step 4: Verify order walks the book if quantity exceeds best level",
       "Step 5: Verify filled amount and average price in response",
       "Step 6: Test with maxSlippage parameter",
-      "Step 7: Place market order exceeding slippage → partial fill + cancel remainder",
-      "Step 8: Place market order on empty book → rejected with insufficient_liquidity"
+      "Step 7: Place market order exceeding slippage \u2192 partial fill + cancel remainder",
+      "Step 8: Place market order on empty book \u2192 rejected with insufficient_liquidity"
     ],
     "edgeCases": [
-      "Empty book → rejected",
-      "Partial liquidity → fills what's available, cancels rest",
-      "maxSlippage exceeded → partial fill + cancel"
+      "Empty book \u2192 rejected",
+      "Partial liquidity \u2192 fills what's available, cancels rest",
+      "maxSlippage exceeded \u2192 partial fill + cancel"
     ],
     "verify": [
       "E2E: tests/e2e/feature-32.spec.ts"
@@ -1246,9 +1246,9 @@
       "Step 8: Test fullscreen toggle"
     ],
     "edgeCases": [
-      "No candle data → show empty chart with message",
-      "Single candle → renders correctly",
-      "Very long history → chart scrolls/zooms"
+      "No candle data \u2192 show empty chart with message",
+      "Single candle \u2192 renders correctly",
+      "Very long history \u2192 chart scrolls/zooms"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1283,8 +1283,8 @@
       "Step 7: Verify WS subscription changes to new interval"
     ],
     "edgeCases": [
-      "No data for selected interval → show empty chart",
-      "Switch interval while loading → cancel previous, load new"
+      "No data for selected interval \u2192 show empty chart",
+      "Switch interval while loading \u2192 cancel previous, load new"
     ],
     "verify": [
       "E2E: tests/e2e/feature-34.spec.ts"
@@ -1310,7 +1310,7 @@
       "Then the candle has correct open, high, low, close, and volume"
     ],
     "steps": [
-      "Step 1: Execute trade at price 50000 (first in period → open)",
+      "Step 1: Execute trade at price 50000 (first in period \u2192 open)",
       "Step 2: Execute trade at price 50100 (new high)",
       "Step 3: Execute trade at price 49900 (new low)",
       "Step 4: Execute trade at price 50050 (close)",
@@ -1321,9 +1321,9 @@
       "Step 9: Verify trade_count = 4"
     ],
     "edgeCases": [
-      "Single trade in period → O=H=L=C",
-      "No trades → carry-forward candle (O=H=L=C=prev close, V=0)",
-      "Trade at exact period boundary → belongs to new period"
+      "Single trade in period \u2192 O=H=L=C",
+      "No trades \u2192 carry-forward candle (O=H=L=C=prev close, V=0)",
+      "Trade at exact period boundary \u2192 belongs to new period"
     ],
     "verify": [
       "curl -s 'http://localhost:3000/api/v1/market/candles/BTC_USDT?interval=1m&limit=5' | jq '.data[-1]'"
@@ -1351,18 +1351,18 @@
     "steps": [
       "Step 1: Click pair name in header bar",
       "Step 2: Verify modal opens with list of all active pairs",
-      "Step 3: Type 'BTC' in search → filter to BTC pairs only",
+      "Step 3: Type 'BTC' in search \u2192 filter to BTC pairs only",
       "Step 4: Verify each pair shows: symbol, price, 24h change",
       "Step 5: Click star to favorite a pair",
-      "Step 6: Switch to Favorites tab → see starred pairs",
+      "Step 6: Switch to Favorites tab \u2192 see starred pairs",
       "Step 7: Click on ETH/USDT",
       "Step 8: Verify trading page navigates to /trade/ETH_USDT",
       "Step 9: Verify modal closes after selection",
-      "Step 10: Test keyboard navigation (↑↓ to select, Enter to confirm)"
+      "Step 10: Test keyboard navigation (\u2191\u2193 to select, Enter to confirm)"
     ],
     "edgeCases": [
-      "No search results → 'No pairs found' message",
-      "Empty favorites → 'No favorites yet' message",
+      "No search results \u2192 'No pairs found' message",
+      "Empty favorites \u2192 'No favorites yet' message",
       "Esc key closes modal"
     ],
     "verify": [
@@ -1374,8 +1374,8 @@
       31
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -1393,15 +1393,15 @@
       "Step 1: Navigate to /markets",
       "Step 2: Verify table with columns: Pair, Price, 24h Change, 24h Volume",
       "Step 3: Verify prices update in real-time via WebSocket",
-      "Step 4: Type 'ETH' in search → filter results",
-      "Step 5: Click 'Price' column header → sort by price",
-      "Step 6: Click '24h Change' → sort by change percentage",
-      "Step 7: Click on BTC/USDT row → navigate to /trade/BTC_USDT",
+      "Step 4: Type 'ETH' in search \u2192 filter results",
+      "Step 5: Click 'Price' column header \u2192 sort by price",
+      "Step 6: Click '24h Change' \u2192 sort by change percentage",
+      "Step 7: Click on BTC/USDT row \u2192 navigate to /trade/BTC_USDT",
       "Step 8: Verify tab filters: All, USDT, BTC pairs"
     ],
     "edgeCases": [
-      "No pairs → empty state",
-      "Suspended pairs → not shown"
+      "No pairs \u2192 empty state",
+      "Suspended pairs \u2192 not shown"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/markets"
@@ -1430,14 +1430,14 @@
     "steps": [
       "Step 1: Start dev server with market maker enabled",
       "Step 2: Wait 5 seconds for bot initialization",
-      "Step 3: Check order book depth → verify multiple bid/ask levels",
+      "Step 3: Check order book depth \u2192 verify multiple bid/ask levels",
       "Step 4: Watch for trades executing (bot creates crossing orders)",
       "Step 5: Verify chart shows candle data forming",
       "Step 6: Verify recent trades panel shows activity",
       "Step 7: Verify the bot can be disabled via config"
     ],
     "edgeCases": [
-      "Bot disabled → no automatic activity",
+      "Bot disabled \u2192 no automatic activity",
       "Bot doesn't interfere with real user orders"
     ],
     "verify": [
@@ -1469,13 +1469,13 @@
       "Step 2: Verify hero section with exchange name/tagline",
       "Step 3: Verify 'Start Trading' CTA button",
       "Step 4: Verify live ticker marquee showing pair prices",
-      "Step 5: Click CTA → navigate to /register or /trade",
+      "Step 5: Click CTA \u2192 navigate to /register or /trade",
       "Step 6: Verify 3-4 feature highlight cards",
       "Step 7: Verify ticker updates in real-time"
     ],
     "edgeCases": [
-      "WebSocket not connected → ticker shows static data",
-      "Already logged in → CTA says 'Go to Trading'"
+      "WebSocket not connected \u2192 ticker shows static data",
+      "Already logged in \u2192 CTA says 'Go to Trading'"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -1510,11 +1510,11 @@
       "Step 5: Verify asset table: Currency, Available, Frozen, Total, Value",
       "Step 6: Verify 'Hide small balances' toggle works",
       "Step 7: Verify Deposit and Withdraw buttons per asset",
-      "Step 8: Click Deposit → navigate to deposit page"
+      "Step 8: Click Deposit \u2192 navigate to deposit page"
     ],
     "edgeCases": [
-      "No balances → show empty state with deposit CTA",
-      "Single currency → donut shows 100%"
+      "No balances \u2192 show empty state with deposit CTA",
+      "Single currency \u2192 donut shows 100%"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/wallet"
@@ -1548,11 +1548,11 @@
       "Step 5: Verify buy order status = 'partially_filled', filled_amount = 0.5",
       "Step 6: Verify remaining 0.5 rests in book at 50001",
       "Step 7: Verify average price calculated correctly",
-      "Step 8: Cancel remaining → verify status = 'cancelled', filled_amount = 0.5"
+      "Step 8: Cancel remaining \u2192 verify status = 'cancelled', filled_amount = 0.5"
     ],
     "edgeCases": [
-      "Dust remaining (< min lot size) → auto-fill or auto-cancel",
-      "All sells consumed → remaining becomes maker order"
+      "Dust remaining (< min lot size) \u2192 auto-fill or auto-cancel",
+      "All sells consumed \u2192 remaining becomes maker order"
     ],
     "verify": [
       "E2E: tests/e2e/feature-41.spec.ts"
@@ -1588,8 +1588,8 @@
       "Step 7: Verify new candle starts with open=previous close"
     ],
     "edgeCases": [
-      "No trades → carry-forward candle pushed at period boundary",
-      "Multiple trades in same second → all reflected in candle"
+      "No trades \u2192 carry-forward candle pushed at period boundary",
+      "Multiple trades in same second \u2192 all reflected in candle"
     ],
     "verify": [
       "E2E: tests/e2e/feature-42.spec.ts"
@@ -1625,8 +1625,8 @@
       "Step 7: Verify WS order.cancelled events received for each order"
     ],
     "edgeCases": [
-      "No open orders → success with count=0",
-      "Mixed filled/open → only cancel open ones"
+      "No open orders \u2192 success with count=0",
+      "Mixed filled/open \u2192 only cancel open ones"
     ],
     "verify": [
       "E2E: tests/e2e/feature-43.spec.ts"
@@ -1636,8 +1636,8 @@
       15
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -1660,8 +1660,8 @@
       "Step 6: Verify the largest level has a full bar"
     ],
     "edgeCases": [
-      "Single level → full bar",
-      "Equal volumes → equal bars"
+      "Single level \u2192 full bar",
+      "Equal volumes \u2192 equal bars"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1694,8 +1694,8 @@
       "Step 5: Verify prefers-reduced-motion disables animation"
     ],
     "edgeCases": [
-      "Rapid updates → last flash wins (no stacking)",
-      "prefers-reduced-motion → no animation"
+      "Rapid updates \u2192 last flash wins (no stacking)",
+      "prefers-reduced-motion \u2192 no animation"
     ],
     "verify": [
       "E2E: tests/e2e/feature-45.spec.ts"
@@ -1722,14 +1722,14 @@
     ],
     "steps": [
       "Step 1: Navigate to trading page",
-      "Step 2: Select Buy mode → verify button is green with white text",
-      "Step 3: Select Sell mode → verify button is red with white text",
+      "Step 2: Select Buy mode \u2192 verify button is green with white text",
+      "Step 3: Select Sell mode \u2192 verify button is red with white text",
       "Step 4: Verify buy/sell tab indicators match colors",
       "Step 5: Verify percentage slider accent matches current mode color"
     ],
     "edgeCases": [
-      "Disabled button → muted version of the color",
-      "Hover state → slightly lighter shade"
+      "Disabled button \u2192 muted version of the color",
+      "Hover state \u2192 slightly lighter shade"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1756,16 +1756,16 @@
     ],
     "steps": [
       "Step 1: Place a market order that fills immediately",
-      "Step 2: Verify green toast: 'Order Filled — Bought X BTC @ $Y'",
+      "Step 2: Verify green toast: 'Order Filled \u2014 Bought X BTC @ $Y'",
       "Step 3: Place a partial fill scenario",
-      "Step 4: Verify yellow toast: 'Partial Fill — X of Y filled'",
+      "Step 4: Verify yellow toast: 'Partial Fill \u2014 X of Y filled'",
       "Step 5: Place order with insufficient balance",
-      "Step 6: Verify red toast: 'Order Rejected — Insufficient balance'",
+      "Step 6: Verify red toast: 'Order Rejected \u2014 Insufficient balance'",
       "Step 7: Verify toasts auto-dismiss after 5 seconds",
       "Step 8: Verify error toasts persist until manually dismissed"
     ],
     "edgeCases": [
-      "Multiple toasts → stack vertically",
+      "Multiple toasts \u2192 stack vertically",
       "Toast includes actionable link (e.g., 'Deposit USDT')"
     ],
     "verify": [
@@ -1795,15 +1795,15 @@
     "steps": [
       "Step 1: Login with 10000 USDT available",
       "Step 2: Set price to 50000 on buy form",
-      "Step 3: Click 25% button → amount = 0.05 BTC (25% of 10000/50000)",
-      "Step 4: Click 50% → amount = 0.1 BTC",
-      "Step 5: Click 75% → amount = 0.15 BTC",
-      "Step 6: Click 100% → amount = 0.2 BTC",
+      "Step 3: Click 25% button \u2192 amount = 0.05 BTC (25% of 10000/50000)",
+      "Step 4: Click 50% \u2192 amount = 0.1 BTC",
+      "Step 5: Click 75% \u2192 amount = 0.15 BTC",
+      "Step 6: Click 100% \u2192 amount = 0.2 BTC",
       "Step 7: Verify total updates automatically",
-      "Step 8: Switch to sell mode → percentage applies to BTC available"
+      "Step 8: Switch to sell mode \u2192 percentage applies to BTC available"
     ],
     "edgeCases": [
-      "Zero balance → all percentages show 0",
+      "Zero balance \u2192 all percentages show 0",
       "100% accounts for fees"
     ],
     "verify": [
@@ -1830,15 +1830,15 @@
       "Then a visual indicator shows connected (green), connecting (yellow), or disconnected (red)"
     ],
     "steps": [
-      "Step 1: Load trading page → verify green dot indicator",
-      "Step 2: Simulate disconnect → verify yellow 'Reconnecting...' banner",
+      "Step 1: Load trading page \u2192 verify green dot indicator",
+      "Step 2: Simulate disconnect \u2192 verify yellow 'Reconnecting...' banner",
       "Step 3: Verify auto-reconnect with exponential backoff",
-      "Step 4: On reconnect → verify green dot returns",
-      "Step 5: After max retries → verify red 'Connection lost' with manual retry button"
+      "Step 4: On reconnect \u2192 verify green dot returns",
+      "Step 5: After max retries \u2192 verify red 'Connection lost' with manual retry button"
     ],
     "edgeCases": [
-      "Server restart → auto-reconnect succeeds",
-      "Stale data (>5s since last update) → show warning"
+      "Server restart \u2192 auto-reconnect succeeds",
+      "Stale data (>5s since last update) \u2192 show warning"
     ],
     "verify": [
       "E2E: tests/e2e/feature-49.spec.ts"
@@ -1872,9 +1872,9 @@
       "Step 5: Verify spread updates in real-time"
     ],
     "edgeCases": [
-      "No asks → spread shows '--'",
-      "No bids → spread shows '--'",
-      "Spread = 0 (crossed book) → immediate matching occurs"
+      "No asks \u2192 spread shows '--'",
+      "No bids \u2192 spread shows '--'",
+      "Spread = 0 (crossed book) \u2192 immediate matching occurs"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -1909,9 +1909,9 @@
       "Step 7: Verify user's BTC balance decreases"
     ],
     "edgeCases": [
-      "No bids when triggered → market order fails with insufficient_liquidity",
-      "Price gaps past stop → triggers at first trade below stop",
-      "Multiple stops at same level → all trigger in sequence"
+      "No bids when triggered \u2192 market order fails with insufficient_liquidity",
+      "Price gaps past stop \u2192 triggers at first trade below stop",
+      "Multiple stops at same level \u2192 all trigger in sequence"
     ],
     "verify": [
       "E2E: tests/e2e/feature-51.spec.ts"
@@ -1942,11 +1942,11 @@
       "Step 2: Execute trade at 45000 (triggers stop)",
       "Step 3: Verify limit sell order placed at 44900",
       "Step 4: Verify order appears in order book at 44900",
-      "Step 5: When matched at 44900 → trade executes"
+      "Step 5: When matched at 44900 \u2192 trade executes"
     ],
     "edgeCases": [
-      "Limit price far from market → order rests in book",
-      "Stop triggers but limit can't fill → order sits in book"
+      "Limit price far from market \u2192 order rests in book",
+      "Stop triggers but limit can't fill \u2192 order sits in book"
     ],
     "verify": [
       "E2E: tests/e2e/feature-52.spec.ts"
@@ -1974,14 +1974,14 @@
     "steps": [
       "Step 1: Place OCO: take-profit sell@55000, stop-loss sell@45000, amount=1.0",
       "Step 2: Verify two linked orders created",
-      "Step 3: Trade at 55000 → take-profit triggers and fills",
+      "Step 3: Trade at 55000 \u2192 take-profit triggers and fills",
       "Step 4: Verify stop-loss order auto-cancelled",
       "Step 5: Verify oco_pair_id links the two orders",
-      "Step 6: Test reverse: stop-loss triggers → take-profit cancelled"
+      "Step 6: Test reverse: stop-loss triggers \u2192 take-profit cancelled"
     ],
     "edgeCases": [
-      "Both prices hit in same trade → first triggered wins",
-      "Cancel one leg manually → other remains active"
+      "Both prices hit in same trade \u2192 first triggered wins",
+      "Cancel one leg manually \u2192 other remains active"
     ],
     "verify": [
       "E2E: tests/e2e/feature-53.spec.ts"
@@ -2015,8 +2015,8 @@
       "Step 5: Verify order final status has filled_amount=0.5"
     ],
     "edgeCases": [
-      "Full liquidity available → full fill, no cancel",
-      "Zero liquidity → immediate cancel, filled=0"
+      "Full liquidity available \u2192 full fill, no cancel",
+      "Zero liquidity \u2192 immediate cancel, filled=0"
     ],
     "verify": [
       "E2E: tests/e2e/feature-54.spec.ts"
@@ -2047,11 +2047,11 @@
       "Step 3: Verify order is cancelled with filled_amount=0",
       "Step 4: Verify no trades created",
       "Step 5: Verify user balance unchanged",
-      "Step 6: Place FOK buy 0.3@50000 → verify full fill"
+      "Step 6: Place FOK buy 0.3@50000 \u2192 verify full fill"
     ],
     "edgeCases": [
-      "Exact match → fills",
-      "One share short → entire order rejected"
+      "Exact match \u2192 fills",
+      "One share short \u2192 entire order rejected"
     ],
     "verify": [
       "E2E: tests/e2e/feature-55.spec.ts"
@@ -2084,8 +2084,8 @@
       "Step 5: Verify no self-trade is recorded"
     ],
     "edgeCases": [
-      "Different users at same price → normal match",
-      "STP with partial fills → cancel remaining resting"
+      "Different users at same price \u2192 normal match",
+      "STP with partial fills \u2192 cancel remaining resting"
     ],
     "verify": [
       "E2E: tests/e2e/feature-56.spec.ts"
@@ -2112,13 +2112,13 @@
     ],
     "steps": [
       "Step 1: Execute trade at 50000 to establish last price",
-      "Step 2: Place buy limit at 55001 (10.002% above) → rejected",
-      "Step 3: Place buy limit at 54999 (9.998% above) → accepted",
-      "Step 4: Place sell limit at 44999 (10.002% below) → rejected",
+      "Step 2: Place buy limit at 55001 (10.002% above) \u2192 rejected",
+      "Step 3: Place buy limit at 54999 (9.998% above) \u2192 accepted",
+      "Step 4: Place sell limit at 44999 (10.002% below) \u2192 rejected",
       "Step 5: Verify error message includes max allowed range"
     ],
     "edgeCases": [
-      "No last price (first trade ever) → protection skipped",
+      "No last price (first trade ever) \u2192 protection skipped",
       "Admin can configure the percentage per pair"
     ],
     "verify": [
@@ -2153,12 +2153,12 @@
       "Step 6: Verify 2FA is now enabled",
       "Step 7: Logout and login again",
       "Step 8: Verify 2FA code prompt appears after password",
-      "Step 9: Enter correct code → login succeeds",
-      "Step 10: Enter wrong code → login fails"
+      "Step 9: Enter correct code \u2192 login succeeds",
+      "Step 10: Enter wrong code \u2192 login fails"
     ],
     "edgeCases": [
-      "Scan QR but never verify → 2FA not enabled",
-      "Try to enable twice → 'Already enabled' message",
+      "Scan QR but never verify \u2192 2FA not enabled",
+      "Try to enable twice \u2192 'Already enabled' message",
       "Admin can disable user's 2FA via admin panel"
     ],
     "verify": [
@@ -2195,8 +2195,8 @@
       "Step 8: Verify kyc_verifications record created"
     ],
     "edgeCases": [
-      "Already Level 1+ → show current level, no re-verification needed",
-      "Invalid phone format → validation error"
+      "Already Level 1+ \u2192 show current level, no re-verification needed",
+      "Invalid phone format \u2192 validation error"
     ],
     "verify": [
       "E2E: tests/e2e/feature-59.spec.ts"
@@ -2231,12 +2231,12 @@
       "Step 7: Submit for review",
       "Step 8: Verify status changes to 'pending'",
       "Step 9: Admin logs in and reviews in KYC queue",
-      "Step 10: Admin approves → user becomes Level 2"
+      "Step 10: Admin approves \u2192 user becomes Level 2"
     ],
     "edgeCases": [
-      "Non-image file → validation error",
-      "Already Level 2 → no re-submission needed",
-      "Admin rejects → user can resubmit"
+      "Non-image file \u2192 validation error",
+      "Already Level 2 \u2192 no re-submission needed",
+      "Admin rejects \u2192 user can resubmit"
     ],
     "verify": [
       "E2E: tests/e2e/feature-60.spec.ts"
@@ -2268,15 +2268,15 @@
       "Step 4: Enter withdrawal address",
       "Step 5: Enter amount (verify fee shown)",
       "Step 6: Confirm withdrawal",
-      "Step 7: See status: pending_approval → processing → confirming → completed",
+      "Step 7: See status: pending_approval \u2192 processing \u2192 confirming \u2192 completed",
       "Step 8: Verify balance decreased by amount + fee",
       "Step 9: Verify simulated tx_hash generated",
       "Step 10: Verify withdrawal record in history"
     ],
     "edgeCases": [
-      "Insufficient balance → rejected",
-      "Amount below minimum → validation error",
-      "Exceeds daily limit → rejected with message"
+      "Insufficient balance \u2192 rejected",
+      "Amount below minimum \u2192 validation error",
+      "Exceeds daily limit \u2192 rejected with message"
     ],
     "verify": [
       "E2E: tests/e2e/feature-61.spec.ts"
@@ -2312,8 +2312,8 @@
       "Step 7: Verify pagination for many transactions"
     ],
     "edgeCases": [
-      "No transactions → empty state",
-      "Filter returns no results → 'No transactions found'"
+      "No transactions \u2192 empty state",
+      "Filter returns no results \u2192 'No transactions found'"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/wallet/history"
@@ -2350,8 +2350,8 @@
       "Step 8: Verify charts render (volume, user growth)"
     ],
     "edgeCases": [
-      "No data → cards show 0 or '--'",
-      "Non-admin user → 403 forbidden"
+      "No data \u2192 cards show 0 or '--'",
+      "Non-admin user \u2192 403 forbidden"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/admin/stats -H 'Authorization: Bearer ADMIN_TOKEN' | jq .data"
@@ -2382,16 +2382,16 @@
       "Step 2: Verify all pairs listed with status",
       "Step 3: Click 'Add Pair'",
       "Step 4: Fill form: symbol, precision, fees, min amounts",
-      "Step 5: Submit → pair created",
+      "Step 5: Submit \u2192 pair created",
       "Step 6: Edit an existing pair's fees",
-      "Step 7: Disable a pair → all open orders cancelled",
+      "Step 7: Disable a pair \u2192 all open orders cancelled",
       "Step 8: Verify disabled pair hidden from public API",
-      "Step 9: Re-enable pair → pair active again"
+      "Step 9: Re-enable pair \u2192 pair active again"
     ],
     "edgeCases": [
-      "Disable pair with open orders → force cancel all + unfreeze",
-      "Duplicate symbol → error",
-      "Invalid precision → validation error"
+      "Disable pair with open orders \u2192 force cancel all + unfreeze",
+      "Duplicate symbol \u2192 error",
+      "Invalid precision \u2192 validation error"
     ],
     "verify": [
       "E2E: tests/e2e/feature-64.spec.ts"
@@ -2428,8 +2428,8 @@
       "Step 8: Verify taker fee = 0.12% of trade amount"
     ],
     "edgeCases": [
-      "Negative fee (rebate) → rejected for MVP",
-      "Zero fee → accepted",
+      "Negative fee (rebate) \u2192 rejected for MVP",
+      "Zero fee \u2192 accepted",
       "Fee change doesn't affect existing open orders"
     ],
     "verify": [
@@ -2458,16 +2458,16 @@
     "steps": [
       "Step 1: Navigate to /admin/users",
       "Step 2: Verify user list with columns: ID, Email, KYC, Balance, Status",
-      "Step 3: Search by email → filtered results",
-      "Step 4: Click user → view detail panel",
-      "Step 5: Click 'Freeze' → user status = suspended",
+      "Step 3: Search by email \u2192 filtered results",
+      "Step 4: Click user \u2192 view detail panel",
+      "Step 5: Click 'Freeze' \u2192 user status = suspended",
       "Step 6: Verify frozen user cannot login",
-      "Step 7: Click 'Unfreeze' → user status = active",
+      "Step 7: Click 'Unfreeze' \u2192 user status = active",
       "Step 8: Verify audit log entry created for freeze action"
     ],
     "edgeCases": [
-      "Freeze admin → should be prevented or require confirmation",
-      "Freeze user with open orders → orders remain (not auto-cancelled)"
+      "Freeze admin \u2192 should be prevented or require confirmation",
+      "Freeze user with open orders \u2192 orders remain (not auto-cancelled)"
     ],
     "verify": [
       "E2E: tests/e2e/feature-66.spec.ts"
@@ -2496,15 +2496,15 @@
       "Step 1: Submit Level 2 KYC as regular user",
       "Step 2: Login as admin, navigate to KYC queue",
       "Step 3: Verify pending submission visible",
-      "Step 4: Click submission → view documents",
-      "Step 5: Click 'Approve' → user level updated to Level 2",
+      "Step 4: Click submission \u2192 view documents",
+      "Step 5: Click 'Approve' \u2192 user level updated to Level 2",
       "Step 6: Verify user notified via WS",
       "Step 7: Submit another KYC, reject it with reason",
       "Step 8: Verify user sees rejection reason and can resubmit"
     ],
     "edgeCases": [
-      "No pending submissions → empty queue",
-      "Approve already approved → no-op"
+      "No pending submissions \u2192 empty queue",
+      "Approve already approved \u2192 no-op"
     ],
     "verify": [
       "E2E: tests/e2e/feature-67.spec.ts"
@@ -2539,8 +2539,8 @@
       "Step 6: Verify logs are immutable (cannot be deleted)"
     ],
     "edgeCases": [
-      "No actions → empty log",
-      "Many actions → paginated"
+      "No actions \u2192 empty log",
+      "Many actions \u2192 paginated"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/admin/audit-logs -H 'Authorization: Bearer ADMIN_TOKEN' | jq '.data | length'"
@@ -2567,17 +2567,17 @@
     ],
     "steps": [
       "Step 1: BTC_USDT has amountPrecision=6, pricePrecision=2",
-      "Step 2: Place order with amount=0.0000001 (7 decimals) → rejected",
-      "Step 3: Place order with price=50000.001 (3 decimals) → rejected",
-      "Step 4: Place order below minAmount → rejected",
-      "Step 5: Place order below minTotal (notional) → rejected",
-      "Step 6: Place valid order → accepted",
+      "Step 2: Place order with amount=0.0000001 (7 decimals) \u2192 rejected",
+      "Step 3: Place order with price=50000.001 (3 decimals) \u2192 rejected",
+      "Step 4: Place order below minAmount \u2192 rejected",
+      "Step 5: Place order below minTotal (notional) \u2192 rejected",
+      "Step 6: Place valid order \u2192 accepted",
       "Step 7: Verify each rejection has specific error code"
     ],
     "edgeCases": [
-      "Exactly at min → accepted",
-      "Price = 0 → rejected",
-      "Amount = 0 → rejected"
+      "Exactly at min \u2192 accepted",
+      "Price = 0 \u2192 rejected",
+      "Amount = 0 \u2192 rejected"
     ],
     "verify": [
       "E2E: tests/e2e/feature-69.spec.ts"
@@ -2644,12 +2644,12 @@
       "Step 4: Wait for startup to complete",
       "Step 5: Query order book depth",
       "Step 6: Verify book matches pre-restart state",
-      "Step 7: Place new crossing order → trades execute correctly"
+      "Step 7: Place new crossing order \u2192 trades execute correctly"
     ],
     "edgeCases": [
-      "Empty order book → rebuilds empty",
-      "10k+ orders → rebuilds within 2 seconds",
-      "Partially filled orders → only remaining amount in book"
+      "Empty order book \u2192 rebuilds empty",
+      "10k+ orders \u2192 rebuilds within 2 seconds",
+      "Partially filled orders \u2192 only remaining amount in book"
     ],
     "verify": [
       "E2E: tests/e2e/feature-71.spec.ts"
@@ -2685,9 +2685,9 @@
       "Step 7: Verify limit parameter works (default 500, max 1000)"
     ],
     "edgeCases": [
-      "No candles → empty array",
-      "Invalid interval → 400 error",
-      "Future time range → empty"
+      "No candles \u2192 empty array",
+      "Invalid interval \u2192 400 error",
+      "Future time range \u2192 empty"
     ],
     "verify": [
       "curl -s 'http://localhost:3000/api/v1/market/candles/BTC_USDT?interval=1h&limit=10' | jq '.data | length'"
@@ -2714,16 +2714,16 @@
     ],
     "steps": [
       "Step 1: Click 'Indicators' button on chart header",
-      "Step 2: Select 'MA(7)' → verify moving average line on chart",
-      "Step 3: Select 'EMA(25)' → verify exponential MA line",
-      "Step 4: Select 'RSI(14)' → verify RSI in separate pane below",
-      "Step 5: Select 'MACD' → verify MACD histogram in separate pane",
-      "Step 6: Select 'Bollinger Bands(20)' → verify bands on chart",
-      "Step 7: Remove an indicator → verify it disappears"
+      "Step 2: Select 'MA(7)' \u2192 verify moving average line on chart",
+      "Step 3: Select 'EMA(25)' \u2192 verify exponential MA line",
+      "Step 4: Select 'RSI(14)' \u2192 verify RSI in separate pane below",
+      "Step 5: Select 'MACD' \u2192 verify MACD histogram in separate pane",
+      "Step 6: Select 'Bollinger Bands(20)' \u2192 verify bands on chart",
+      "Step 7: Remove an indicator \u2192 verify it disappears"
     ],
     "edgeCases": [
-      "Insufficient data for period → indicator partial or hidden",
-      "Multiple indicators → all render without overlap"
+      "Insufficient data for period \u2192 indicator partial or hidden",
+      "Multiple indicators \u2192 all render without overlap"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -2753,12 +2753,12 @@
       "Step 1: Place market buy order",
       "Step 2: Verify confirmation dialog appears",
       "Step 3: Dialog shows: Side, Type, Amount, Estimated Total, Fee",
-      "Step 4: Click 'Confirm Buy' → order executes",
-      "Step 5: Click 'Cancel' → order not placed",
+      "Step 4: Click 'Confirm Buy' \u2192 order executes",
+      "Step 5: Click 'Cancel' \u2192 order not placed",
       "Step 6: Verify 'Don't show again' checkbox works"
     ],
     "edgeCases": [
-      "Limit orders → no confirmation by default (configurable)",
+      "Limit orders \u2192 no confirmation by default (configurable)",
       "'Don't show again' persists in localStorage"
     ],
     "verify": [
@@ -2789,14 +2789,14 @@
       "Step 2: Verify centered card layout with logo",
       "Step 3: Verify email input with label and placeholder",
       "Step 4: Verify password input with label and visibility toggle",
-      "Step 5: Click eye icon → password visible",
+      "Step 5: Click eye icon \u2192 password visible",
       "Step 6: Verify Login button styling (primary color)",
       "Step 7: Verify 'Register' link below form",
       "Step 8: Verify form validation messages style correctly"
     ],
     "edgeCases": [
-      "Mobile → form fills full width",
-      "Error state → red border on invalid fields"
+      "Mobile \u2192 form fills full width",
+      "Error state \u2192 red border on invalid fields"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/login"
@@ -2825,15 +2825,15 @@
     "steps": [
       "Step 1: Navigate to /register",
       "Step 2: Verify form layout matches login page style",
-      "Step 3: Type 'abc' → strength meter shows 'Weak' in red",
-      "Step 4: Type 'Abc1234' → shows 'Medium' in yellow",
-      "Step 5: Type 'Abc1234!' → shows 'Strong' in green",
+      "Step 3: Type 'abc' \u2192 strength meter shows 'Weak' in red",
+      "Step 4: Type 'Abc1234' \u2192 shows 'Medium' in yellow",
+      "Step 5: Type 'Abc1234!' \u2192 shows 'Strong' in green",
       "Step 6: Verify requirement checklist updates in real-time",
       "Step 7: Verify Terms of Service checkbox"
     ],
     "edgeCases": [
-      "Empty password → no strength shown",
-      "Paste password → strength updates"
+      "Empty password \u2192 no strength shown",
+      "Paste password \u2192 strength updates"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/register"
@@ -2862,14 +2862,14 @@
     "steps": [
       "Step 1: Verify precision dropdown at bottom of order book",
       "Step 2: Default precision matches pair's price_precision",
-      "Step 3: Select lower precision (e.g., 0.1 → 1)",
+      "Step 3: Select lower precision (e.g., 0.1 \u2192 1)",
       "Step 4: Verify price levels aggregate (sum quantities)",
-      "Step 5: Select higher precision (e.g., 1 → 0.01)",
+      "Step 5: Select higher precision (e.g., 1 \u2192 0.01)",
       "Step 6: Verify more price levels shown"
     ],
     "edgeCases": [
-      "Only one precision option → dropdown disabled",
-      "Zero orders at aggregated level → level hidden"
+      "Only one precision option \u2192 dropdown disabled",
+      "Zero orders at aggregated level \u2192 level hidden"
     ],
     "verify": [
       "E2E: tests/e2e/feature-77.spec.ts"
@@ -2898,13 +2898,13 @@
       "Step 1: Login as admin, navigate to /admin",
       "Step 2: Verify sidebar with sections: Dashboard, Users, Trading, Finance, Audit, Settings",
       "Step 3: Verify each section has an icon",
-      "Step 4: Click 'Users' → sidebar highlights Users",
-      "Step 5: Verify subsections expand (Users → User List, KYC Queue)",
+      "Step 4: Click 'Users' \u2192 sidebar highlights Users",
+      "Step 5: Verify subsections expand (Users \u2192 User List, KYC Queue)",
       "Step 6: Verify badge shows pending KYC count"
     ],
     "edgeCases": [
-      "Mobile → sidebar collapses to hamburger menu",
-      "Zero pending → no badge shown"
+      "Mobile \u2192 sidebar collapses to hamburger menu",
+      "Zero pending \u2192 no badge shown"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/admin"
@@ -2937,8 +2937,8 @@
       "Step 5: Verify red arrow for negative trends"
     ],
     "edgeCases": [
-      "No data → show 0 with no trend",
-      "First day → no trend comparison"
+      "No data \u2192 show 0 with no trend",
+      "First day \u2192 no trend comparison"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/admin"
@@ -2971,8 +2971,8 @@
       "Step 5: Verify security level indicator (strength bar)"
     ],
     "edgeCases": [
-      "2FA not set up → show 'Enable 2FA' button",
-      "No login history → show empty state"
+      "2FA not set up \u2192 show 'Enable 2FA' button",
+      "No login history \u2192 show empty state"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/account/security"
@@ -3004,14 +3004,14 @@
       "Step 3: Enter current password",
       "Step 4: Enter new password (must meet strength requirements)",
       "Step 5: Confirm new password",
-      "Step 6: Submit → password updated",
-      "Step 7: Logout and login with new password → success",
-      "Step 8: Try login with old password → fails"
+      "Step 6: Submit \u2192 password updated",
+      "Step 7: Logout and login with new password \u2192 success",
+      "Step 8: Try login with old password \u2192 fails"
     ],
     "edgeCases": [
-      "Wrong old password → error",
-      "New password same as old → error",
-      "New password too weak → validation error"
+      "Wrong old password \u2192 error",
+      "New password same as old \u2192 error",
+      "New password too weak \u2192 validation error"
     ],
     "verify": [
       "E2E: tests/e2e/feature-81.spec.ts"
@@ -3044,8 +3044,8 @@
       "Step 5: Verify failed attempts show red X with reason"
     ],
     "edgeCases": [
-      "No login history → empty state",
-      "Many entries → paginated"
+      "No login history \u2192 empty state",
+      "Many entries \u2192 paginated"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/account/login-history"
@@ -3076,12 +3076,12 @@
       "Step 3: Verify limit price input",
       "Step 4: Enter stop price, limit price, amount",
       "Step 5: Verify form validates stop price direction (sell stop < market)",
-      "Step 6: Submit → order created in monitoring state",
+      "Step 6: Submit \u2192 order created in monitoring state",
       "Step 7: Verify order appears in Open Orders with type 'stop_limit'"
     ],
     "edgeCases": [
-      "Stop price above market for sell → validation error",
-      "Stop price = market price → triggers immediately"
+      "Stop price above market for sell \u2192 validation error",
+      "Stop price = market price \u2192 triggers immediately"
     ],
     "verify": [
       "E2E: tests/e2e/feature-83.spec.ts"
@@ -3092,8 +3092,8 @@
       52
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -3112,13 +3112,13 @@
       "Step 2: Fill take-profit section: price above market",
       "Step 3: Fill stop-loss section: stop price below market, limit price",
       "Step 4: Enter shared amount",
-      "Step 5: Submit → two linked orders created",
+      "Step 5: Submit \u2192 two linked orders created",
       "Step 6: Verify both appear in Open Orders",
       "Step 7: Verify 'OCO' label on both orders"
     ],
     "edgeCases": [
-      "Take-profit price below market → validation error",
-      "Stop price above market → validation error"
+      "Take-profit price below market \u2192 validation error",
+      "Stop price above market \u2192 validation error"
     ],
     "verify": [
       "E2E: tests/e2e/feature-84.spec.ts"
@@ -3129,8 +3129,8 @@
       53
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -3153,8 +3153,8 @@
       "Step 6: Verify pagination works"
     ],
     "edgeCases": [
-      "No trades → empty state",
-      "Filter by pair → only that pair shown"
+      "No trades \u2192 empty state",
+      "Filter by pair \u2192 only that pair shown"
     ],
     "verify": [
       "curl -s 'http://localhost:3000/api/v1/trades/my?symbol=BTC_USDT' -H 'Authorization: Bearer TOKEN' | jq '.data | length'"
@@ -3189,8 +3189,8 @@
       "Step 6: Test limit parameter"
     ],
     "edgeCases": [
-      "No trades → empty array",
-      "limit=0 → default (50)"
+      "No trades \u2192 empty array",
+      "limit=0 \u2192 default (50)"
     ],
     "verify": [
       "curl -s 'http://localhost:3000/api/v1/market/trades/BTC_USDT?limit=10' | jq '.data | length'"
@@ -3225,8 +3225,8 @@
       "Step 7: Call GET /api/v1/market/ticker for all tickers"
     ],
     "edgeCases": [
-      "No trades in 24h → all zeros",
-      "Single trade → high=low=last"
+      "No trades in 24h \u2192 all zeros",
+      "Single trade \u2192 high=low=last"
     ],
     "verify": [
       "curl -s http://localhost:3000/api/v1/market/ticker/BTC_USDT | jq .data"
@@ -3255,13 +3255,13 @@
       "Step 1: Login to get tokens",
       "Step 2: Call POST /api/v1/auth/logout with refresh token",
       "Step 3: Verify logout returns success",
-      "Step 4: Attempt to refresh with old token → 401",
+      "Step 4: Attempt to refresh with old token \u2192 401",
       "Step 5: Verify access token still works until expiry",
       "Step 6: Verify UI redirects to login page"
     ],
     "edgeCases": [
-      "Already logged out → success (idempotent)",
-      "Invalid token → success (no error)"
+      "Already logged out \u2192 success (idempotent)",
+      "Invalid token \u2192 success (no error)"
     ],
     "verify": [
       "E2E: tests/e2e/feature-88.spec.ts"
@@ -3290,14 +3290,14 @@
     "steps": [
       "Step 1: Navigate to /wallet/deposit",
       "Step 2: Verify currency selector dropdown",
-      "Step 3: Select USDT → verify simulated address and QR code displayed",
+      "Step 3: Select USDT \u2192 verify simulated address and QR code displayed",
       "Step 4: Select network (ERC20/TRC20)",
       "Step 5: Enter amount",
-      "Step 6: Click 'Deposit' → see confirmation progress",
+      "Step 6: Click 'Deposit' \u2192 see confirmation progress",
       "Step 7: Verify animated progress bar (1/3, 2/3, 3/3)"
     ],
     "edgeCases": [
-      "Invalid amount → validation error",
+      "Invalid amount \u2192 validation error",
       "Network warning displayed prominently"
     ],
     "verify": [
@@ -3329,13 +3329,13 @@
       "Step 2: Select currency",
       "Step 3: Select network",
       "Step 4: Enter withdrawal address",
-      "Step 5: Enter amount → see fee and receive amount calculated",
+      "Step 5: Enter amount \u2192 see fee and receive amount calculated",
       "Step 6: Verify summary card before confirmation",
       "Step 7: Verify bold network warning message"
     ],
     "edgeCases": [
-      "Wrong network warning → prominent red banner",
-      "Amount > available → disabled submit"
+      "Wrong network warning \u2192 prominent red banner",
+      "Amount > available \u2192 disabled submit"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/wallet/withdraw"
@@ -3363,9 +3363,9 @@
     ],
     "steps": [
       "Step 1: Login as new user with no orders",
-      "Step 2: Navigate to Open Orders → see 'No open orders' + illustration",
-      "Step 3: Navigate to Trade History → see 'No trades yet' message",
-      "Step 4: Navigate to Wallet → see 'No assets' + Deposit CTA",
+      "Step 2: Navigate to Open Orders \u2192 see 'No open orders' + illustration",
+      "Step 3: Navigate to Trade History \u2192 see 'No trades yet' message",
+      "Step 4: Navigate to Wallet \u2192 see 'No assets' + Deposit CTA",
       "Step 5: Verify each empty state has a relevant call-to-action button"
     ],
     "edgeCases": [
@@ -3403,8 +3403,8 @@
       "Step 5: Verify borders use --border color token"
     ],
     "edgeCases": [
-      "High DPI displays → crisp 1px lines",
-      "Dark theme → subtle borders, not harsh"
+      "High DPI displays \u2192 crisp 1px lines",
+      "Dark theme \u2192 subtle borders, not harsh"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT"
@@ -3471,7 +3471,7 @@
       "Step 5: Verify order form overlay available in fullscreen"
     ],
     "edgeCases": [
-      "Mobile → fullscreen uses native API if available",
+      "Mobile \u2192 fullscreen uses native API if available",
       "F key shortcut works"
     ],
     "verify": [
@@ -3499,14 +3499,14 @@
     ],
     "steps": [
       "Step 1: Verify order book prices are clickable (pointer cursor)",
-      "Step 2: Click an ask price → order form price field updates",
-      "Step 3: Click a bid price → order form price field updates",
+      "Step 2: Click an ask price \u2192 order form price field updates",
+      "Step 3: Click a bid price \u2192 order form price field updates",
       "Step 4: Verify clicking amount fills amount field",
       "Step 5: Verify order form switches to Limit tab if on Market"
     ],
     "edgeCases": [
-      "Order form in Market mode → switch to Limit on click",
-      "Form has unsaved changes → prompt or overwrite"
+      "Order form in Market mode \u2192 switch to Limit on click",
+      "Form has unsaved changes \u2192 prompt or overwrite"
     ],
     "verify": [
       "E2E: tests/e2e/feature-95.spec.ts"
@@ -3535,13 +3535,13 @@
     "steps": [
       "Step 1: Navigate to /markets",
       "Step 2: Verify tabs: All, USDT, BTC",
-      "Step 3: Click USDT tab → only USDT pairs shown",
-      "Step 4: Click BTC tab → only BTC pairs shown",
-      "Step 5: Click All → all pairs shown",
+      "Step 3: Click USDT tab \u2192 only USDT pairs shown",
+      "Step 4: Click BTC tab \u2192 only BTC pairs shown",
+      "Step 5: Click All \u2192 all pairs shown",
       "Step 6: Verify active tab is highlighted"
     ],
     "edgeCases": [
-      "Only one pair type → other tabs show 'No pairs'",
+      "Only one pair type \u2192 other tabs show 'No pairs'",
       "Tab persists on page refresh"
     ],
     "verify": [
@@ -3576,8 +3576,8 @@
       "Step 6: Verify link to upgrade KYC"
     ],
     "edgeCases": [
-      "Long nickname → truncated",
-      "Special characters in nickname → sanitized"
+      "Long nickname \u2192 truncated",
+      "Special characters in nickname \u2192 sanitized"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/account/profile"
@@ -3605,14 +3605,14 @@
     "steps": [
       "Step 1: Navigate to /account/kyc",
       "Step 2: Verify current level shown with visual progress",
-      "Step 3: Verify Level 0 → shows 'Verify Phone' CTA",
-      "Step 4: Verify Level 1 → shows 'Upload Documents' CTA",
-      "Step 5: Verify Level 2 → shows 'Fully Verified' badge",
+      "Step 3: Verify Level 0 \u2192 shows 'Verify Phone' CTA",
+      "Step 4: Verify Level 1 \u2192 shows 'Upload Documents' CTA",
+      "Step 5: Verify Level 2 \u2192 shows 'Fully Verified' badge",
       "Step 6: Verify trading/withdrawal limits shown per level"
     ],
     "edgeCases": [
-      "Pending review → show 'Under Review' status",
-      "Rejected → show reason and resubmit button"
+      "Pending review \u2192 show 'Under Review' status",
+      "Rejected \u2192 show reason and resubmit button"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/account/kyc"
@@ -3645,10 +3645,10 @@
       "Step 4: Toggle maintenance mode off",
       "Step 5: Set max_open_orders_per_user to 50",
       "Step 6: Verify user with 50 orders cannot place more",
-      "Step 7: Toggle registration off → /register returns error"
+      "Step 7: Toggle registration off \u2192 /register returns error"
     ],
     "edgeCases": [
-      "Invalid config value → validation error",
+      "Invalid config value \u2192 validation error",
       "Config changes logged in audit log"
     ],
     "verify": [
@@ -3680,11 +3680,11 @@
       "Step 3: Verify client retries: 1s, 2s, 4s, 8s, 16s, 30s max",
       "Step 4: On reconnect, verify fresh depth snapshot received",
       "Step 5: Verify lastUpdateId is current (not stale)",
-      "Step 6: After 10 failures → show manual retry button"
+      "Step 6: After 10 failures \u2192 show manual retry button"
     ],
     "edgeCases": [
-      "Server restarts → client reconnects automatically",
-      "Network flap → reconnects without data loss"
+      "Server restarts \u2192 client reconnects automatically",
+      "Network flap \u2192 reconnects without data loss"
     ],
     "verify": [
       "E2E: tests/e2e/feature-100.spec.ts"
@@ -3719,8 +3719,8 @@
       "Step 6: Swipe between tabs"
     ],
     "edgeCases": [
-      "Orientation change → layout adapts",
-      "Very small screen (320px) → still usable"
+      "Orientation change \u2192 layout adapts",
+      "Very small screen (320px) \u2192 still usable"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT (375px viewport)"
@@ -3753,8 +3753,8 @@
       "Step 5: Verify all panels are usable"
     ],
     "edgeCases": [
-      "iPad landscape (1024px) → uses desktop layout",
-      "iPad portrait (768px) → tablet layout"
+      "iPad landscape (1024px) \u2192 uses desktop layout",
+      "iPad portrait (768px) \u2192 tablet layout"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/trade/BTC_USDT (768px viewport)"
@@ -3783,13 +3783,13 @@
       "Step 1: Set viewport to 375px",
       "Step 2: Verify logo still visible",
       "Step 3: Verify hamburger icon replaces nav links",
-      "Step 4: Click hamburger → menu slides open",
+      "Step 4: Click hamburger \u2192 menu slides open",
       "Step 5: Verify all nav links accessible in menu",
-      "Step 6: Click a link → menu closes, navigation occurs"
+      "Step 6: Click a link \u2192 menu closes, navigation occurs"
     ],
     "edgeCases": [
-      "Menu open + scroll → menu stays open",
-      "Click outside menu → closes"
+      "Menu open + scroll \u2192 menu stays open",
+      "Click outside menu \u2192 closes"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000 (375px viewport)"
@@ -3823,8 +3823,8 @@
       "Step 6: Verify asset table scrolls horizontally if needed"
     ],
     "edgeCases": [
-      "Very long currency names → truncated",
-      "Many assets → scrollable list"
+      "Very long currency names \u2192 truncated",
+      "Many assets \u2192 scrollable list"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000/wallet (375px viewport)"
@@ -3889,12 +3889,12 @@
       "Step 2: Verify background changes to light colors",
       "Step 3: Verify text changes to dark colors",
       "Step 4: Verify charts adapt to light theme",
-      "Step 5: Refresh page → light theme persists",
-      "Step 6: Toggle back to dark → persists"
+      "Step 5: Refresh page \u2192 light theme persists",
+      "Step 6: Toggle back to dark \u2192 persists"
     ],
     "edgeCases": [
-      "No localStorage → default to dark",
-      "System preference changes → doesn't override manual choice"
+      "No localStorage \u2192 default to dark",
+      "System preference changes \u2192 doesn't override manual choice"
     ],
     "verify": [
       "E2E: tests/e2e/feature-106.spec.ts"
@@ -3923,13 +3923,13 @@
       "Step 1: Load trading page",
       "Step 2: Press Tab repeatedly",
       "Step 3: Verify focus ring visible on each element",
-      "Step 4: Verify logical tab order (nav → chart → book → form)",
+      "Step 4: Verify logical tab order (nav \u2192 chart \u2192 book \u2192 form)",
       "Step 5: Verify Enter activates buttons",
       "Step 6: Verify Esc closes modals"
     ],
     "edgeCases": [
-      "Focus trap in modals → Tab stays within modal",
-      "Skip to content link → jumps to main content"
+      "Focus trap in modals \u2192 Tab stays within modal",
+      "Skip to content link \u2192 jumps to main content"
     ],
     "verify": [
       "E2E: tests/e2e/feature-107.spec.ts"
@@ -3955,16 +3955,16 @@
       "Then ARIA labels provide meaningful context"
     ],
     "steps": [
-      "Step 1: Inspect order book → has role='grid' and aria-label",
-      "Step 2: Inspect order form → has role='form' and aria-label",
+      "Step 1: Inspect order book \u2192 has role='grid' and aria-label",
+      "Step 2: Inspect order form \u2192 has role='form' and aria-label",
       "Step 3: Verify price updates use aria-live regions",
       "Step 4: Verify error messages use aria-live='assertive'",
       "Step 5: Run axe-core accessibility audit",
       "Step 6: Verify zero critical violations"
     ],
     "edgeCases": [
-      "Dynamic content updates → aria-live regions update",
-      "Decorative elements → aria-hidden='true'"
+      "Dynamic content updates \u2192 aria-live regions update",
+      "Decorative elements \u2192 aria-hidden='true'"
     ],
     "verify": [
       "E2E: tests/e2e/feature-108.spec.ts"
@@ -3992,14 +3992,14 @@
     ],
     "steps": [
       "Step 1: Run axe-core color contrast audit on trading page",
-      "Step 2: Verify primary text on dark background ≥ 4.5:1",
-      "Step 3: Verify secondary text on dark background ≥ 4.5:1",
-      "Step 4: Verify green/red on dark background ≥ 3:1",
+      "Step 2: Verify primary text on dark background \u2265 4.5:1",
+      "Step 3: Verify secondary text on dark background \u2265 4.5:1",
+      "Step 4: Verify green/red on dark background \u2265 3:1",
       "Step 5: Run same audit on light theme"
     ],
     "edgeCases": [
-      "Buy/sell not distinguishable by color alone (use ▲/▼ arrows too)",
-      "Disabled text → lower contrast acceptable"
+      "Buy/sell not distinguishable by color alone (use \u25b2/\u25bc arrows too)",
+      "Disabled text \u2192 lower contrast acceptable"
     ],
     "verify": [
       "E2E: tests/e2e/feature-109.spec.ts"
@@ -4029,10 +4029,10 @@
       "Step 2: Navigate to trading page",
       "Step 3: Verify no price flash animations",
       "Step 4: Verify no skeleton pulse animations",
-      "Step 5: Verify transitions are instant (≤ 0.01ms)"
+      "Step 5: Verify transitions are instant (\u2264 0.01ms)"
     ],
     "edgeCases": [
-      "Media query not supported → animations play normally"
+      "Media query not supported \u2192 animations play normally"
     ],
     "verify": [
       "E2E: tests/e2e/feature-110.spec.ts"
@@ -4065,8 +4065,8 @@
       "Step 5: Verify monospace font for numeric inputs"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4092,15 +4092,15 @@
       "Then the styling matches the design specification"
     ],
     "steps": [
-      "Step 1: Hover over Buy button → lighter green",
-      "Step 2: Hover over Sell button → lighter red",
-      "Step 3: Active/pressed → slightly darker",
-      "Step 4: Disabled → muted color + cursor-not-allowed",
+      "Step 1: Hover over Buy button \u2192 lighter green",
+      "Step 2: Hover over Sell button \u2192 lighter red",
+      "Step 3: Active/pressed \u2192 slightly darker",
+      "Step 4: Disabled \u2192 muted color + cursor-not-allowed",
       "Step 5: Verify transition is 150ms ease"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4128,13 +4128,13 @@
     "steps": [
       "Step 1: Verify tab buttons in order form",
       "Step 2: Active tab has bottom border indicator",
-      "Step 3: Hover non-active tab → subtle background",
+      "Step 3: Hover non-active tab \u2192 subtle background",
       "Step 4: Tab content transitions smoothly",
       "Step 5: Verify keyboard Tab key moves between tabs"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4162,13 +4162,13 @@
     "steps": [
       "Step 1: View order history table",
       "Step 2: Verify alternating row backgrounds",
-      "Step 3: Hover row → highlight effect",
+      "Step 3: Hover row \u2192 highlight effect",
       "Step 4: Verify header row is sticky on scroll",
       "Step 5: Verify column alignment (numbers right-aligned)"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4202,8 +4202,8 @@
       "Step 6: Verify click outside modal closes it"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4232,12 +4232,12 @@
       "Step 1: Verify time interval buttons are pill-shaped",
       "Step 2: Active interval has filled background",
       "Step 3: Inactive intervals have ghost styling",
-      "Step 4: Hover → subtle background change",
+      "Step 4: Hover \u2192 subtle background change",
       "Step 5: Verify indicators button and fullscreen icon"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4266,12 +4266,12 @@
       "Step 1: View order history with many pages",
       "Step 2: Verify page numbers shown",
       "Step 3: Verify current page highlighted",
-      "Step 4: Click next arrow → page advances",
+      "Step 4: Click next arrow \u2192 page advances",
       "Step 5: Verify first/last page shortcuts"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4303,8 +4303,8 @@
       "Step 4: Verify badges have rounded corners and consistent padding"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4336,8 +4336,8 @@
       "Step 4: Verify admin KPI cards with icon and value layout"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4370,8 +4370,8 @@
       "Step 5: Verify responsive sizing"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4401,11 +4401,11 @@
       "Step 2: Scrollbar thumb uses dark grey color",
       "Step 3: Scrollbar track is transparent",
       "Step 4: Verify smooth scrolling behavior",
-      "Step 5: Firefox → custom scrollbar-width and scrollbar-color"
+      "Step 5: Firefox \u2192 custom scrollbar-width and scrollbar-color"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4435,11 +4435,11 @@
       "Step 2: Verify error boundary catches it",
       "Step 3: Verify friendly error message displayed",
       "Step 4: Verify 'Retry' button present",
-      "Step 5: Click retry → component attempts to reload"
+      "Step 5: Click retry \u2192 component attempts to reload"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4469,11 +4469,11 @@
       "Step 2: Verify error messages appear below each invalid input",
       "Step 3: Verify error message color is red",
       "Step 4: Verify field border turns red",
-      "Step 5: Fix input → error disappears immediately"
+      "Step 5: Fix input \u2192 error disappears immediately"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4499,14 +4499,14 @@
       "Then the styling matches the design specification"
     ],
     "steps": [
-      "Step 1: View /login at 375px → form is centered, full-width",
-      "Step 2: View /register at 375px → form is centered",
-      "Step 3: Verify touch targets are ≥ 44px",
+      "Step 1: View /login at 375px \u2192 form is centered, full-width",
+      "Step 2: View /register at 375px \u2192 form is centered",
+      "Step 3: Verify touch targets are \u2265 44px",
       "Step 4: Verify virtual keyboard doesn't obscure form"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4532,14 +4532,14 @@
       "Then the styling matches the design specification"
     ],
     "steps": [
-      "Step 1: At 1920px → order book shows 15-20 levels per side",
-      "Step 2: At 375px → order book shows 5 levels per side",
+      "Step 1: At 1920px \u2192 order book shows 15-20 levels per side",
+      "Step 2: At 375px \u2192 order book shows 5 levels per side",
       "Step 3: Verify level count adjusts with viewport",
       "Step 4: Verify spread is always visible"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4568,12 +4568,12 @@
       "Step 1: Navigate to landing page",
       "Step 2: Verify footer at bottom with project name",
       "Step 3: Verify GitHub repository link",
-      "Step 4: Verify 'Educational demo — no real funds' disclaimer",
+      "Step 4: Verify 'Educational demo \u2014 no real funds' disclaimer",
       "Step 5: Verify footer is not visible on trading page (no footer on trading)"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4606,8 +4606,8 @@
       "Step 5: Tooltip disappears on mouse leave"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4635,14 +4635,14 @@
     "steps": [
       "Step 1: Focus on price input in order form",
       "Step 2: Verify +/- stepper buttons visible",
-      "Step 3: Click + → price increments by tick size",
-      "Step 4: Click - → price decrements",
-      "Step 5: Hold button → continuous increment",
+      "Step 3: Click + \u2192 price increments by tick size",
+      "Step 4: Click - \u2192 price decrements",
+      "Step 5: Hold button \u2192 continuous increment",
       "Step 6: Verify up/down arrow keys work when focused"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4669,14 +4669,14 @@
     ],
     "steps": [
       "Step 1: Watch recent trades panel",
-      "Step 2: When new trade arrives → row slides in from top",
+      "Step 2: When new trade arrives \u2192 row slides in from top",
       "Step 3: Verify fade-in animation over 300ms",
       "Step 4: Verify oldest trade at bottom scrolls out",
       "Step 5: Verify animation respects prefers-reduced-motion"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -4709,8 +4709,8 @@
       "Step 5: Verify balances section shows all currency balances"
     ],
     "edgeCases": [
-      "Theme toggle → styles update correctly",
-      "High DPI display → crisp rendering"
+      "Theme toggle \u2192 styles update correctly",
+      "High DPI display \u2192 crisp rendering"
     ],
     "verify": [
       "SCREENSHOT: http://localhost:3000"
@@ -5182,8 +5182,8 @@
       1
     ],
     "passes": true,
-    "implementedAt": null,
-    "sessionId": null,
+    "implementedAt": "2026-02-22T02:55:00Z",
+    "sessionId": "dev-loop-5",
     "notes": ""
   },
   {
@@ -5191,7 +5191,7 @@
     "category": "style",
     "priority": 4,
     "area": "style",
-    "description": "Sort indicators (▲/▼) on sortable table columns",
+    "description": "Sort indicators (\u25b2/\u25bc) on sortable table columns",
     "acceptanceCriteria": [
       "Given the feature is implemented",
       "When testing the described behavior",
