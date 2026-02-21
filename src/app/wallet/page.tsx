@@ -119,7 +119,7 @@ export default function WalletPage() {
           >
             ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+          <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <Link
               href="/wallet/deposit"
               style={{
@@ -131,6 +131,9 @@ export default function WalletPage() {
                 fontWeight: '600',
                 fontSize: '14px',
                 textDecoration: 'none',
+                textAlign: 'center',
+                flex: '1 1 auto',
+                minWidth: '200px',
               }}
             >
               Deposit
@@ -147,6 +150,9 @@ export default function WalletPage() {
                 fontSize: '14px',
                 textDecoration: 'none',
                 border: '1px solid var(--border)',
+                textAlign: 'center',
+                flex: '1 1 auto',
+                minWidth: '200px',
               }}
             >
               Withdraw
