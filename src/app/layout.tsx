@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'CryptoExchange - Demo Trading Platform',
@@ -14,7 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body>
-        {children}
+        <Navbar />
+        <div style={{ paddingTop: '56px' }}>
+          {children}
+        </div>
       </body>
     </html>
   );
