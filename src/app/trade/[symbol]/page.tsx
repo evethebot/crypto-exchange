@@ -181,18 +181,6 @@ export default function TradePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-      {/* Demo Banner */}
-      <div style={{
-        background: '#2a1a00',
-        padding: '6px 16px',
-        textAlign: 'center',
-        fontSize: '13px',
-        color: 'var(--yellow)',
-        borderBottom: '1px solid var(--border)',
-      }}>
-        Demo Exchange — No real funds
-      </div>
-
       {/* Trading pair header */}
       <div style={{
         display: 'flex',

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import DemoBanner from '@/components/DemoBanner';
 
 export const metadata: Metadata = {
   title: 'CryptoExchange - Demo Trading Platform',
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         <Navbar />
         <div style={{ paddingTop: '56px' }}>
+          <DemoBanner />
           {children}
         </div>
       </body>
