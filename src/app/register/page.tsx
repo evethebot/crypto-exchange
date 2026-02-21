@@ -154,7 +154,7 @@ export default function RegisterPage() {
           </div>
 
           {password && (
-            <div className="strength" style={{ marginBottom: '16px' }}>
+            <div data-testid="pw-meter" style={{ marginBottom: '16px' }}>
               <div style={{
                 display: 'flex',
                 gap: '4px',

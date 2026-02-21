@@ -81,21 +81,29 @@ export default function MarketsPage() {
         }}
       />
 
-      {loading ? (
-        <div style={{ color: 'var(--text-tertiary)', padding: '40px 0', textAlign: 'center' }}>Loading...</div>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-          <thead>
-            <tr style={{ color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border)' }}>
-              <th onClick={() => handleSort('symbol')} style={{ textAlign: 'left', padding: '10px', cursor: 'pointer' }}>Pair</th>
-              <th onClick={() => handleSort('lastPrice')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>Last Price</th>
-              <th onClick={() => handleSort('change24h')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>24h Change</th>
-              <th onClick={() => handleSort('volume24h')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>24h Volume</th>
-              <th style={{ textAlign: 'center', padding: '10px' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map(pair => (
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border)' }}>
+            <th onClick={() => handleSort('symbol')} style={{ textAlign: 'left', padding: '10px', cursor: 'pointer' }}>Pair</th>
+            <th onClick={() => handleSort('lastPrice')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>Last Price</th>
+            <th onClick={() => handleSort('change24h')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>24h Change</th>
+            <th onClick={() => handleSort('volume24h')} style={{ textAlign: 'right', padding: '10px', cursor: 'pointer' }}>24h Volume</th>
+            <th style={{ textAlign: 'center', padding: '10px' }}>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            [1, 2, 3, 4, 5].map(i => (
+              <tr key={`skel-${i}`} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '12px 10px' }}><div className="skeleton" style={{ height: '16px', width: '80px', background: 'var(--bg-tertiary)', borderRadius: '4px' }} /></td>
+                <td style={{ padding: '12px 10px' }}><div className="skeleton" style={{ height: '16px', width: '60px', background: 'var(--bg-tertiary)', borderRadius: '4px', marginLeft: 'auto' }} /></td>
+                <td style={{ padding: '12px 10px' }}><div className="skeleton" style={{ height: '16px', width: '50px', background: 'var(--bg-tertiary)', borderRadius: '4px', marginLeft: 'auto' }} /></td>
+                <td style={{ padding: '12px 10px' }}><div className="skeleton" style={{ height: '16px', width: '70px', background: 'var(--bg-tertiary)', borderRadius: '4px', marginLeft: 'auto' }} /></td>
+                <td style={{ padding: '12px 10px' }}><div className="skeleton" style={{ height: '16px', width: '50px', background: 'var(--bg-tertiary)', borderRadius: '4px', margin: '0 auto' }} /></td>
+              </tr>
+            ))
+          ) : (
+            sorted.map(pair => (
               <tr key={pair.symbol} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '12px 10px', fontWeight: 600 }}>
                   <Link href={`/trade/${pair.symbol}`} style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
@@ -127,10 +135,10 @@ export default function MarketsPage() {
                   </Link>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
