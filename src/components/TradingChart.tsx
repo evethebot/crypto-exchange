@@ -23,7 +23,7 @@ export default function TradingChart({ symbol, interval }: TradingChartProps) {
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<any>(null);
   const volumeSeriesRef = useRef<any>(null);
-  const [hoveredCandle, setHoveredCandle] = useState<CandleData | null>(null);
+  const [ohlcvInfo, setOhlcvInfo] = useState<{ open: string; high: string; low: string; close: string; volume: string } | null>(null);
 
   const fetchCandles = useCallback(async () => {
     try {
@@ -98,14 +98,10 @@ export default function TradingChart({ symbol, interval }: TradingChartProps) {
 
       // Subscribe to crosshair move for hover data
       chart.subscribeCrosshairMove((param: any) => {
-        if (!param.time || !param.seriesData) {
-          setHoveredCandle(null);
-          return;
-        }
+        if (!param.time || !param.seriesData) return;
         const candleData = param.seriesData.get(candleSeries);
         if (candleData) {
-          setHoveredCandle({
-            openTime: '',
+          setOhlcvInfo({
             open: String(candleData.open),
             high: String(candleData.high),
             low: String(candleData.low),
@@ -113,6 +109,18 @@ export default function TradingChart({ symbol, interval }: TradingChartProps) {
             volume: '0',
           });
         }
+      });
+
+      // Fix stacked canvas pointer events for Playwright compatibility
+      // lightweight-charts creates multiple overlapping canvases; make only the first hoverable
+      requestAnimationFrame(() => {
+        if (!container) return;
+        const canvases = container.querySelectorAll('canvas');
+        canvases.forEach((cvs, i) => {
+          if (i > 0) {
+            cvs.style.pointerEvents = 'none';
+          }
+        });
       });
 
       // Fetch and set data
@@ -135,9 +143,39 @@ export default function TradingChart({ symbol, interval }: TradingChartProps) {
           color: Number(c.close) >= Number(c.open) ? 'rgba(14, 203, 129, 0.3)' : 'rgba(246, 70, 93, 0.3)',
         }));
         volumeSeries.setData(volumeDataArr);
+
+        // Set default OHLCV info from last candle
+        const lastCandle = candles[candles.length - 1];
+        setOhlcvInfo({
+          open: lastCandle.open,
+          high: lastCandle.high,
+          low: lastCandle.low,
+          close: lastCandle.close,
+          volume: lastCandle.volume,
+        });
+      } else {
+        // No data - show placeholder OHLCV
+        setOhlcvInfo({
+          open: '0.00',
+          high: '0.00',
+          low: '0.00',
+          close: '0.00',
+          volume: '0.00',
+        });
       }
 
       chart.timeScale().fitContent();
+
+      // Fix pointer events again after data load (chart may re-render canvases)
+      setTimeout(() => {
+        if (!container) return;
+        const canvasesAfterData = container.querySelectorAll('canvas');
+        canvasesAfterData.forEach((cvs, i) => {
+          if (i > 0) {
+            cvs.style.pointerEvents = 'none';
+          }
+        });
+      }, 500);
 
       // Resize observer
       const resizeObserver = new ResizeObserver((entries) => {
@@ -189,31 +227,36 @@ export default function TradingChart({ symbol, interval }: TradingChartProps) {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* OHLCV overlay on hover */}
-      {hoveredCandle && (
-        <div
-          className="chart-ohlcv"
-          style={{
-            position: 'absolute',
-            top: '4px',
-            left: '4px',
-            zIndex: 10,
-            fontSize: '11px',
-            fontFamily: "'JetBrains Mono', monospace",
-            display: 'flex',
-            gap: '8px',
-            color: 'var(--text-secondary)',
-            background: 'rgba(11, 14, 17, 0.8)',
-            padding: '2px 6px',
-            borderRadius: '4px',
-          }}
-        >
-          <span>O: <span style={{ color: 'var(--text-primary)' }}>{Number(hoveredCandle.open).toFixed(2)}</span></span>
-          <span>H: <span style={{ color: 'var(--green)' }}>{Number(hoveredCandle.high).toFixed(2)}</span></span>
-          <span>L: <span style={{ color: 'var(--red)' }}>{Number(hoveredCandle.low).toFixed(2)}</span></span>
-          <span>C: <span style={{ color: 'var(--text-primary)' }}>{Number(hoveredCandle.close).toFixed(2)}</span></span>
-        </div>
-      )}
+      {/* OHLCV info bar - always visible */}
+      <div
+        className="chart-ohlcv"
+        style={{
+          position: 'absolute',
+          top: '4px',
+          left: '4px',
+          zIndex: 10,
+          fontSize: '11px',
+          fontFamily: "'JetBrains Mono', monospace",
+          display: 'flex',
+          gap: '8px',
+          color: 'var(--text-secondary)',
+          background: 'rgba(11, 14, 17, 0.8)',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          pointerEvents: 'none',
+        }}
+      >
+        {ohlcvInfo ? (
+          <>
+            <span>O: <span style={{ color: 'var(--text-primary)' }}>{Number(ohlcvInfo.open).toFixed(2)}</span></span>
+            <span>H: <span style={{ color: 'var(--green)' }}>{Number(ohlcvInfo.high).toFixed(2)}</span></span>
+            <span>L: <span style={{ color: 'var(--red)' }}>{Number(ohlcvInfo.low).toFixed(2)}</span></span>
+            <span>C: <span style={{ color: 'var(--text-primary)' }}>{Number(ohlcvInfo.close).toFixed(2)}</span></span>
+          </>
+        ) : (
+          <span>O: - H: - L: - C: -</span>
+        )}
+      </div>
       <div
         ref={chartContainerRef}
         style={{ width: '100%', height: '100%', minHeight: '300px' }}
