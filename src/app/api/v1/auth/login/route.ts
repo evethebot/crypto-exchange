@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error('Login error:', error);
+    console.error('Login error:', error?.message);
     return NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }

@@ -19,7 +19,7 @@ export function generateAccessToken(payload: JWTPayload): string {
 }
 
 export function generateRefreshToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ ...payload, jti: uuidv4() }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyAccessToken(token: string): JWTPayload | null {
