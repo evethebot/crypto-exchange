@@ -98,7 +98,9 @@ export default function MarketsPage() {
             {sorted.map(pair => (
               <tr key={pair.symbol} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '12px 10px', fontWeight: 600 }}>
-                  {pair.baseCurrency}/{pair.quoteCurrency}
+                  <Link href={`/trade/${pair.symbol}`} style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
+                    {pair.baseCurrency}/{pair.quoteCurrency}
+                  </Link>
                 </td>
                 <td style={{ padding: '12px 10px', textAlign: 'right', fontFamily: "'JetBrains Mono', monospace" }}>
                   {pair.lastPrice || '--'}
