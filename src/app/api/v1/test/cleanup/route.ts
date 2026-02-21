@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { resetCircuitBreaker } from '@/lib/matching-engine';
+import { rateLimitMap } from '@/app/api/v1/orders/route';
 
 export async function POST(request: NextRequest) {
   // Only available in development/test
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Reset in-memory state
     resetCircuitBreaker();
+    rateLimitMap.clear();
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

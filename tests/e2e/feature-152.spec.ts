@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Feature #152: Circuit breaker — halts trading at 15% price move in 1min', () => {
 
+  test.beforeEach(async ({ request }) => {
+    await request.post('/api/v1/test/cleanup');
+  });
+
   async function setupTrader(request: any) {
     const email = `cb_${Date.now()}_${Math.random().toString(36).slice(2)}@test.com`;
     await request.post('/api/v1/auth/register', { data: { email, password: 'Test1234!' } });
@@ -87,23 +91,16 @@ test.describe('Feature #152: Circuit breaker — halts trading at 15% price move
 
     await new Promise(r => setTimeout(r, 250));
 
-    // Buyer tries to buy at that low price - should be rejected by circuit breaker
+    // Buyer tries to buy at that low price - circuit breaker prevents matching
     const res2 = await request.post('/api/v1/orders', {
       headers: { Authorization: `Bearer ${buyer.token}` },
       data: { symbol: 'BTC_USDT', side: 'buy', type: 'limit', price: '42000', amount: '0.01' },
     });
 
-    // The circuit breaker should either reject the order or prevent the trade
     const data = await res2.json();
-    // Either the order is rejected (status != 200) or the trade doesn't execute due to circuit breaker
-    if (res2.status() === 200) {
-      // If order was accepted, the trade should not have filled (circuit breaker prevented matching)
-      expect(data.data?.status).not.toBe('filled');
-    } else {
-      // Order was rejected
-      expect(res2.status()).toBe(400);
-      expect(data.error).toContain('CIRCUIT_BREAKER');
-    }
+    // Order accepted but circuit breaker prevented the trade from filling
+    expect(res2.status()).toBe(200);
+    expect(data.data?.status).not.toBe('filled');
   });
 
   test('Feature #152 API: Circuit breaker triggers on >15% price spike', async ({ request }) => {
@@ -142,12 +139,9 @@ test.describe('Feature #152: Circuit breaker — halts trading at 15% price move
     });
 
     const data = await res2.json();
-    if (res2.status() === 200) {
-      expect(data.data?.status).not.toBe('filled');
-    } else {
-      expect(res2.status()).toBe(400);
-      expect(data.error).toContain('CIRCUIT_BREAKER');
-    }
+    // Order accepted but circuit breaker prevented the trade from filling
+    expect(res2.status()).toBe(200);
+    expect(data.data?.status).not.toBe('filled');
   });
 
   test('Feature #152 API: Circuit breaker status is queryable', async ({ request }) => {

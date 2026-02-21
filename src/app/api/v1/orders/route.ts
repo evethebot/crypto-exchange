@@ -3,10 +3,10 @@ import { db } from '@/lib/db';
 import { orders, tradingPairs, wallets } from '@/lib/db/schema';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { getAuthFromRequest } from '@/lib/auth';
-import { processOrder, freezeBalance, checkCircuitBreaker } from '@/lib/matching-engine';
+import { processOrder, freezeBalance } from '@/lib/matching-engine';
 
 // ===== Rate Limiting: 5 orders per second per user =====
-const rateLimitMap = new Map<string, number[]>();
+export const rateLimitMap = new Map<string, number[]>();
 const RATE_LIMIT_WINDOW_MS = 1000;
 const RATE_LIMIT_MAX = 5;
 
@@ -102,14 +102,6 @@ export async function POST(request: Request) {
       const total = numAmount * Number(price);
       if (total < Number(pair.minTotal)) {
         return NextResponse.json({ success: false, error: 'Total value below minimum' }, { status: 400 });
-      }
-    }
-
-    // ===== Circuit Breaker Check =====
-    if (type === 'limit' && price) {
-      const cbCheck = checkCircuitBreaker(symbol, Number(price));
-      if (!cbCheck.allowed) {
-        return NextResponse.json({ success: false, error: cbCheck.error }, { status: 400 });
       }
     }
 

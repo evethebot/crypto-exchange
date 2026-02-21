@@ -2,6 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Feature #70: Rate limiting — 5 orders/sec per user', () => {
 
+  test.beforeEach(async ({ request }) => {
+    await request.post('/api/v1/test/cleanup');
+    // Wait for rate limit windows to expire
+    await new Promise(r => setTimeout(r, 1100));
+  });
+
   async function setupTrader(request: any) {
     const email = `rl_${Date.now()}_${Math.random().toString(36).slice(2)}@test.com`;
     await request.post('/api/v1/auth/register', { data: { email, password: 'Test1234!' } });

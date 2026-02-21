@@ -160,6 +160,10 @@ export async function processOrder(input: OrderInput): Promise<MatchResult> {
       const tradeAmount = remainingAmount.lt(makerRemaining) ? remainingAmount : makerRemaining;
       const tradePrice = new Big(makerOrder.price!);
 
+      // Circuit breaker check before executing trade
+      const cbCheck = checkCircuitBreaker(input.symbol, tradePrice.toNumber());
+      if (!cbCheck.allowed) break; // Stop matching, leave remaining as open order
+
       const [pair] = await db
         .select()
         .from(tradingPairs)
@@ -253,6 +257,10 @@ export async function processOrder(input: OrderInput): Promise<MatchResult> {
       const makerRemaining = new Big(makerOrder.remaining || '0');
       const tradeAmount = remainingAmount.lt(makerRemaining) ? remainingAmount : makerRemaining;
       const tradePrice = new Big(makerOrder.price!);
+
+      // Circuit breaker check before executing trade
+      const cbCheck = checkCircuitBreaker(input.symbol, tradePrice.toNumber());
+      if (!cbCheck.allowed) break; // Stop matching, leave remaining as open order
 
       const [pair] = await db
         .select()

@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Feature #132: Decimal precision with big.js', () => {
 
+  test.beforeEach(async ({ request }) => {
+    await request.post('/api/v1/test/cleanup');
+  });
+
   async function setupTrader(request: any) {
     const email = `prec_${Date.now()}_${Math.random().toString(36).slice(2)}@test.com`;
     await request.post('/api/v1/auth/register', { data: { email, password: 'Test1234!' } });

@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Feature #135: Maker/taker fee calculation', () => {
 
+  test.beforeEach(async ({ request }) => {
+    await request.post('/api/v1/test/cleanup');
+  });
+
   async function setupTrader(request: any) {
     const email = `fee_${Date.now()}_${Math.random().toString(36).slice(2)}@test.com`;
     await request.post('/api/v1/auth/register', { data: { email, password: 'Test1234!' } });
