@@ -793,10 +793,10 @@
       6,
       17
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 22,
@@ -877,10 +877,10 @@
       14,
       21
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 24,
@@ -955,10 +955,10 @@
       13,
       15
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 26,
@@ -1142,10 +1142,10 @@
       27,
       21
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 31,
@@ -1180,10 +1180,10 @@
       28,
       21
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 32,
@@ -1219,10 +1219,10 @@
       13,
       14
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 33,
@@ -1813,10 +1813,10 @@
     "dependsOn": [
       23
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 49,
@@ -1921,10 +1921,10 @@
       13,
       32
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 52,
@@ -1955,10 +1955,10 @@
     "dependsOn": [
       51
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 53,
@@ -1991,10 +1991,10 @@
       51,
       52
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 54,
@@ -2025,10 +2025,10 @@
     "dependsOn": [
       13
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 55,
@@ -2060,10 +2060,10 @@
     "dependsOn": [
       13
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 56,
@@ -3164,10 +3164,10 @@
       13,
       16
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 86,
@@ -3516,10 +3516,10 @@
       22,
       23
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 96,
@@ -5478,10 +5478,10 @@
     "dependsOn": [
       1
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 154,
@@ -5610,10 +5610,10 @@
     "dependsOn": [
       1
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 158,
@@ -5709,10 +5709,10 @@
     "dependsOn": [
       1
     ],
-    "passes": false,
-    "implementedAt": null,
+    "passes": true,
+    "implementedAt": "2026-02-22T02:30:00+08:00",
     "sessionId": null,
-    "notes": ""
+    "notes": "Verified via trading.spec.ts test run"
   },
   {
     "id": 161,
