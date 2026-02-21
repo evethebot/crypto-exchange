@@ -133,13 +133,20 @@ export async function GET(request: Request) {
       .orderBy(desc(orders.createdAt))
       .limit(100);
 
+    // Default to open orders only (new + partially_filled) unless status specified
+    const statusFilter = status === 'all'
+      ? []
+      : status
+        ? [eq(orders.status, status as any)]
+        : [sql`${orders.status} IN ('new', 'partially_filled')`];
+
     const userOrders = await db
       .select()
       .from(orders)
       .where(and(
         eq(orders.userId, auth.userId),
         ...(symbol ? [eq(orders.symbol, symbol)] : []),
-        ...(status ? [eq(orders.status, status as any)] : []),
+        ...statusFilter,
       ))
       .orderBy(desc(orders.createdAt))
       .limit(100);

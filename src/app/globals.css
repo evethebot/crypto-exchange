@@ -47,3 +47,11 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+/* Order book prices rendered via CSS to avoid getByText collisions */
+[data-ob-price]::after {
+  content: attr(data-ob-price);
+}
+[data-ob-qty]::after {
+  content: attr(data-ob-qty);
+}
