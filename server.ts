@@ -82,7 +82,7 @@ async function getTickerData(symbol: string) {
 
 async function getAllTickerData() {
   try {
-    const pairs = await db.select().from(tradingPairs).where(eq(tradingPairs.isActive, true));
+    const pairs = await db.select().from(tradingPairs).where(eq(tradingPairs.status, 'active'));
     const tickers = await Promise.all(pairs.map(p => getTickerData(p.symbol)));
     return tickers;
   } catch {
